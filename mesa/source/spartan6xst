@@ -1,11 +1,11 @@
-set -tmpdir "xst/projnav.tmp"
+set -tmpdir "xst/toplevel.tmp"
 set -xsthdpdir "xst"
 run
 -ifn toplevel.prj
 -ofn toplevel
 -ofmt NGC
 -p targetpart
--top TopEthernetHostMot2
+-top tophm2
 -opt_mode Speed
 -opt_level 1
 -power NO
