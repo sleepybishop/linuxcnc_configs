@@ -121,9 +121,9 @@ package PIN_G540_7I76_34 is
 		IOPortTag & x"02" & StepGenTag & StepGenDirPin,		-- I/O 10	PIN 7		Z Dir
 		IOPortTag & x"03" & StepGenTag & StepGenStepPin,	-- I/O 11	PIN 8		A Step
 		IOPortTag & x"03" & StepGenTag & StepGenDirPin,		-- I/O 12	PIN 9		A Dir
-		IOPortTag & x"00" & QCountTag & QCountQAPin,  		-- I/O 13	PIN 10	Input 1 (Quad A)
-		IOPortTag & x"00" & QCountTag & QCountQAPin,  		-- I/O 14	PIN 11	Input 2 (Quad B)
-		IOPortTag & x"00" & QCountTag & QCountIdxPin,    	-- I/O 15	PIN 12	Input 3 (Quad Idx)
+		IOPortTag & x"00" & NullTag & NullPin,  		-- I/O 13	PIN 10	Input 1 (Quad A)
+		IOPortTag & x"00" & NullTag & NullPin,  		-- I/O 14	PIN 11	Input 2 (Quad B)
+		IOPortTag & x"00" & NullTag & NullPin,    	-- I/O 15	PIN 12	Input 3 (Quad Idx)
 		IOPortTag & x"00" & NullTag & NullPin,	 	   		-- I/O 16	PIN 13	Input 4 just GPIO
 		
 																					-- 26 HDR	-- IDC DB25
@@ -142,7 +142,7 @@ package PIN_G540_7I76_34 is
 		IOPortTag & x"00" & SSerialTag & SSerialTX1Pin, 	-- I/O 29	PIN 17	PIN 9
 		IOPortTag & x"00" & SSerialTag & SSerialRX1Pin, 	-- I/O 30	PIN 19	PIN 10
 		IOPortTag & x"01" & QCountTag & QCountQAPin,  			  	-- I/O 31	PIN 21	PIN 11
-		IOPortTag & x"01" & QCountTag & QCountQAPin,  			  	-- I/O 32	PIN 23	PIN 12
+		IOPortTag & x"01" & QCountTag & QCountQBPin,  			  	-- I/O 32	PIN 23	PIN 12
 		IOPortTag & x"01" & QCountTag & QCountIdxPin,  			  	-- I/O 33	PIN 25	PIN 13	
 
 		emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin, -- added for 34 pin 5I25
