@@ -141,9 +141,9 @@ package PIN_G540_7I76_34 is
 		IOPortTag & x"00" & SSerialTag & SSerialRX0Pin,   -- I/O 28	PIN 15	PIN 8
 		IOPortTag & x"00" & SSerialTag & SSerialTX1Pin,   -- I/O 29	PIN 17	PIN 9
 		IOPortTag & x"00" & SSerialTag & SSerialRX1Pin,   -- I/O 30	PIN 19	PIN 10
-		IOPortTag & x"01" & QCountTag & QCountQAPin,      -- I/O 31	PIN 21	PIN 11
+		IOPortTag & x"01" & QCountTag & QCountIdxPin,     -- I/O 31	PIN 21	PIN 11
 		IOPortTag & x"01" & QCountTag & QCountQBPin,      -- I/O 32	PIN 23	PIN 12
-		IOPortTag & x"01" & QCountTag & QCountIdxPin,     -- I/O 33	PIN 25	PIN 13	
+		IOPortTag & x"01" & QCountTag & QCountQAPin,      -- I/O 33	PIN 25	PIN 13
 
 		emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin, -- added for 34 pin 5I25
 		emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,
