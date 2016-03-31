@@ -90,7 +90,7 @@ use work.@Card@.all;
 
 
 -------------------- select (or add) one pinout -----------------------
---use work.@Pin@.all;
+use work.@Pin@.all;
 
 -- 34 I/O pinouts for 5I25, 5I26 and 6I25:
 
