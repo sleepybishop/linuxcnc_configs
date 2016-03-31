@@ -1,13 +1,22 @@
 #
 # requires xilinx webpack ise (tested with 14.7)
 #
+BOARD=6i25
+CHIP=spartan6
+PART=xc6slx9-tqg144-2
 
-all: 
-#	$(MAKE) CHIP=spartan6 PART=xc6slx9-tqg144-2  BOARD=5i25 5i25_G540X2_34.bit
-#	$(MAKE) CHIP=spartan6 PART=xc6slx9-tqg144-2  BOARD=6i25 6i25_G540x2_34.bit
-	$(MAKE) CHIP=spartan6 PART=xc6slx9-tqg144-2  BOARD=6i25 6i25_G540_7i76_34.bit
-#	$(MAKE) CHIP=spartan3 PART=xc3s400-4-tq144   BOARD=7i43u  7i43u_SVUA4_8_48.bit
-#	$(MAKE) CHIP=spartan6 PART=xc6slx16-2-ftg256 BOARD=7i80db 7i80db_25_JUSTIO_68.bit
+TARGET_BITFILES=\
+6i25_G540x2_34.bit\
+6i25_7i76x2_34.bit\
+6i25_G540_7i76_34.bit\
+
+#6i25_G540_DBSPI.bit\
+#6i25_G540_BSPI.bit\
+
+all: $(TARGET_BITFILES)
+
+%.vhd:
+	sed s/@Card@/Sixi25_x9card/g top/TopPCIHostMot2.vhd | sed s/@Pin@/$(subst .vhd,,$(subst $(BOARD),PIN,$@))/g | sed s/TopPCIHostMot2/tophm2/g > $@
 
 %.prj: %.vhd
 	sh ./vhd2prj.sh $*
