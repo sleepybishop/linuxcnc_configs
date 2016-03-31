@@ -102,6 +102,8 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 -- Address hazards:
 --	Fetches via index register require 3 instructions from ST(X,Y,Z,T) or ADDI(X,Y,Z,T)
 --	to actual fetch (STA via index takes no extra delay) 
+-- addix,y,z,t must have inst between successive adds that is addix,1 addix,7 wont work
+-- this may be a pipeline bug, FIXME
 
 -------------------------------------------------------------------------------
 
@@ -480,7 +482,7 @@ begin  -- the CPU
 	if opcode0 = jsr then
 		stackdin <= pcplus1;		--  a jsr (note jsr has priority)
 	else
-		stackdin(width-1 downto 0) <= accum;
+		stackdin(width-1 downto 0) <= accum;		-- default push data is accum (and zero top bits)
 		stackdin(paddwidth-1 downto width) <=(others => '0');
 	end if;
 		

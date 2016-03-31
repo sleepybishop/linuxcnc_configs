@@ -332,8 +332,8 @@ begin
 
 			if loadControl1=  '1' then 
 				TimerSelect <= ibus(14 downto 12);
-				TstartMask <= ibus(8);
-				PstartMask <= ibus(9);
+				PstartMask <= ibus(8);
+				TstartMask <= ibus(9);
 			end if;
 		
 			if (lstart = '1') or ((pstart = '1') and (PstartMask = '1')) or ((TStart = '1') and (TStartMask = '1')) then
