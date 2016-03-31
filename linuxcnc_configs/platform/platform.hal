@@ -1,7 +1,7 @@
 loadrt trivkins
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 loadrt hostmot2
-loadrt hm2_pci config=" num_encoders=2 num_pwmgens=2 num_stepgens=10 sserial_port_0=00xxxx" 
+loadrt hm2_pci config="num_encoders=2 num_pwmgens=2 num_stepgens=10" 
 setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
 setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
 setp    hm2_6i25.0.watchdog.timeout_ns 5000000
@@ -226,53 +226,6 @@ net z-enable     => hm2_6i25.0.stepgen.02.enable
 net home-z     =>  axis.2.home-sw-in
 net z-neg-limit     =>  axis.2.neg-lim-sw-in
 net z-pos-limit     =>  axis.2.pos-lim-sw-in
-
-#*******************
-#  AXIS A (Extruder)
-#*******************
-
-setp   pid.a.Pgain     [AXIS_2]P
-setp   pid.a.Igain     [AXIS_2]I
-setp   pid.a.Dgain     [AXIS_2]D
-setp   pid.a.bias      [AXIS_2]BIAS
-setp   pid.a.FF0       [AXIS_2]FF0
-setp   pid.a.FF1       [AXIS_2]FF1
-setp   pid.a.FF2       [AXIS_2]FF2
-setp   pid.a.deadband  [AXIS_2]DEADBAND
-setp   pid.a.maxoutput [AXIS_2]MAX_OUTPUT
-setp   pid.a.error-previous-target true
-setp   pid.a.maxerror .0005
-
-net a-index-enable  <=> pid.a.index-enable
-net a-enable        =>  pid.a.enable
-net a-output        =>  pid.a.output
-net a-pos-cmd       =>  pid.a.command
-net a-vel-cmd       =>  pid.a.command-deriv
-net a-pos-fb        =>  pid.a.feedback
-
-# Step Gen signals/setup
-
-setp   hm2_6i25.0.stepgen.05.dirsetup        [AXIS_3]DIRSETUP
-setp   hm2_6i25.0.stepgen.05.dirhold         [AXIS_3]DIRHOLD
-setp   hm2_6i25.0.stepgen.05.steplen         [AXIS_3]STEPLEN
-setp   hm2_6i25.0.stepgen.05.stepspace       [AXIS_3]STEPSPACE
-setp   hm2_6i25.0.stepgen.05.position-scale  [AXIS_3]STEP_SCALE
-setp   hm2_6i25.0.stepgen.05.step_type        0
-setp   hm2_6i25.0.stepgen.05.control-type     1
-setp   hm2_6i25.0.stepgen.05.maxaccel         [AXIS_3]STEPGEN_MAXACCEL
-setp   hm2_6i25.0.stepgen.05.maxvel           [AXIS_3]STEPGEN_MAXVEL
-
-# ---closedloop stepper signals---
-
-net a-pos-cmd    <= axis.3.motor-pos-cmd
-net a-vel-cmd    <= axis.3.joint-vel-cmd
-net a-output     <= hm2_6i25.0.stepgen.05.velocity-cmd
-net a-pos-fb     <= hm2_6i25.0.stepgen.05.position-fb
-net a-pos-fb     => axis.3.motor-pos-fb
-net a-enable     <= axis.3.amp-enable-out
-net a-enable     => hm2_6i25.0.stepgen.05.enable
-
-# ---setup home / limit switch signals---
 
 #*******************
 #  SPINDLE S
