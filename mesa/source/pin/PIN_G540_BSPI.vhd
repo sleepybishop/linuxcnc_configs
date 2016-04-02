@@ -77,7 +77,7 @@ package PIN_G540_BSPI is
 		(SSerialTag,	x"00",	ClockLowTag,	x"01",	SSerialCommandAddr&PadT,	SSerialNumRegs,		x"10",	SSerialMPBitMask),
 		(StepGenTag,	x"02",	ClockLowTag,	x"0A",	StepGenRateAddr&PadT,		StepGenNumRegs,		x"00",	StepGenMPBitMask),
 		(PWMTag,			x"00",	ClockHighTag,	x"02",	PWMValAddr&PadT,				PWMNumRegs,				x"00",	PWMMPBitMask),
-		(BSPITag,		  x"00",	ClockLowTag,	x"02",	BSPIDataAddr&PadT,			BSPINumRegs,			x"00",	BSPIMPBitMask),
+		(BSPITag,		  x"00",	ClockLowTag,	x"01",	BSPIDataAddr&PadT,			BSPINumRegs,			x"11",	BSPIMPBitMask),
 		(LEDTag,			x"00",	ClockLowTag,	x"01",	LEDAddr&PadT,					LEDNumRegs,				x"00",	LEDMPBitMask),
 		(NullTag,		x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
 		(NullTag,		x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
@@ -127,13 +127,13 @@ package PIN_G540_BSPI is
 		IOPortTag & x"00" & NullTag & NullPin,            -- I/O 16	PIN 13	Input 4 just GPIO
 		
 																					            -- 26 HDR	-- IDC DB25
-		IOPortTag & x"00" & BSPITag & BSPICS0Pin,         -- I/O 17	PIN 1		PIN 1 
-		IOPortTag & x"00" & BSPITag & BSPIOutPin,         -- I/O 18 PIN 2		PIN 14
-		IOPortTag & x"00" & BSPITag & BSPIClkPin,         -- I/O 19 PIN 3		PIN 2
-		IOPortTag & x"05" & StepGenTag & StepGenStepPin,  -- I/O 20	PIN 4		PIN 15
-		IOPortTag & x"06" & StepGenTag & StepGenDirPin,   -- I/O 21	PIN 5		PIN 3
-		IOPortTag & x"06" & StepGenTag & StepGenStepPin,  -- I/O 22	PIN 6		PIN 16
-		IOPortTag & x"07" & StepGenTag & StepGenDirPin,   -- I/O 23	PIN 7		PIN 4
+		IOPortTag & x"05" & StepGenTag & StepGenDirPin,   -- I/O 17 PIN 1   PIN 1
+		IOPortTag & x"05" & StepGenTag & StepGenStepPin,  -- I/O 18 PIN 2   PIN 14
+		IOPortTag & x"06" & StepGenTag & StepGenDirPin,   -- I/O 19 PIN 3   PIN 2
+		IOPortTag & x"06" & StepGenTag & StepGenStepPin,  -- I/O 20 PIN 4   PIN 15
+		IOPortTag & x"00" & BSPITag & BSPICS0Pin,         -- I/O 21 PIN 5   PIN 3 
+		IOPortTag & x"00" & BSPITag & BSPIOutPin,         -- I/O 22 PIN 6   PIN 16
+		IOPortTag & x"00" & BSPITag & BSPIClkPin,         -- I/O 23 PIN 7   PIN 4
 		IOPortTag & x"07" & StepGenTag & StepGenStepPin,  -- I/O 24	PIN 8		PIN 17
 		IOPortTag & x"08" & StepGenTag & StepGenDirPin,   -- I/O 25	PIN 9		PIN 5
 		IOPortTag & x"08" & StepGenTag & StepGenStepPin,  -- I/O 26	PIN 11	PIN 6

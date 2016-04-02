@@ -77,7 +77,7 @@ package PIN_G540_DBSPI is
 		(SSerialTag,	x"00",	ClockLowTag,	x"01",	SSerialCommandAddr&PadT,	SSerialNumRegs,		x"10",	SSerialMPBitMask),
 		(StepGenTag,	x"02",	ClockLowTag,	x"0A",	StepGenRateAddr&PadT,		StepGenNumRegs,		x"00",	StepGenMPBitMask),
 		(PWMTag,			x"00",	ClockHighTag,	x"02",	PWMValAddr&PadT,				PWMNumRegs,				x"00",	PWMMPBitMask),
-		(DBSPITag,		x"00",	ClockLowTag,	x"04",	DBSPIDataAddr&PadT,			DBSPINumRegs,			x"11",	DBSPIMPBitMask),
+		(DBSPITag,		x"00",	ClockLowTag,	x"01",	DBSPIDataAddr&PadT,			DBSPINumRegs,			x"11",	DBSPIMPBitMask),
 		(LEDTag,			x"00",	ClockLowTag,	x"01",	LEDAddr&PadT,					LEDNumRegs,				x"00",	LEDMPBitMask),
 		(NullTag,		x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
 		(NullTag,		x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),

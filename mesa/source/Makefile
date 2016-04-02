@@ -9,9 +9,9 @@ TARGET_BITFILES=\
 6i25_G540x2_34.bit\
 6i25_7i76x2_34.bit\
 6i25_G540_7i76_34.bit\
+6i25_G540_DBSPI.bit\
+6i25_G540_BSPI.bit\
 
-#6i25_G540_DBSPI.bit\
-#6i25_G540_BSPI.bit\
 
 all: $(TARGET_BITFILES)
 
