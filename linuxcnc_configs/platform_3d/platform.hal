@@ -1,11 +1,11 @@
 loadrt trivkins
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 loadrt hostmot2
-loadrt hm2_pci config="num_encoders=2 num_pwmgens=2 num_stepgens=10 sserial_port_0=00000000" 
+loadrt hm2_pci config="num_encoders=2 num_pwmgens=2 num_stepgens=10"
 setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
 setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
 setp    hm2_6i25.0.watchdog.timeout_ns 5000000
-loadrt pid names=pid.x,pid.y,pid.z,pid.s
+loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.s
 
 addf hm2_6i25.0.read          servo-thread
 addf motion-command-handler   servo-thread
@@ -13,6 +13,7 @@ addf motion-controller        servo-thread
 addf pid.x.do-pid-calcs       servo-thread
 addf pid.y.do-pid-calcs       servo-thread
 addf pid.z.do-pid-calcs       servo-thread
+addf pid.a.do-pid-calcs       servo-thread
 addf pid.s.do-pid-calcs       servo-thread
 addf hm2_6i25.0.write         servo-thread
 
@@ -231,15 +232,15 @@ net z-pos-limit     =>  axis.2.pos-lim-sw-in
 #  AXIS A (Extruder)
 #*******************
 
-setp   pid.a.Pgain     [AXIS_2]P
-setp   pid.a.Igain     [AXIS_2]I
-setp   pid.a.Dgain     [AXIS_2]D
-setp   pid.a.bias      [AXIS_2]BIAS
-setp   pid.a.FF0       [AXIS_2]FF0
-setp   pid.a.FF1       [AXIS_2]FF1
-setp   pid.a.FF2       [AXIS_2]FF2
-setp   pid.a.deadband  [AXIS_2]DEADBAND
-setp   pid.a.maxoutput [AXIS_2]MAX_OUTPUT
+setp   pid.a.Pgain     [AXIS_3]P
+setp   pid.a.Igain     [AXIS_3]I
+setp   pid.a.Dgain     [AXIS_3]D
+setp   pid.a.bias      [AXIS_3]BIAS
+setp   pid.a.FF0       [AXIS_3]FF0
+setp   pid.a.FF1       [AXIS_3]FF1
+setp   pid.a.FF2       [AXIS_3]FF2
+setp   pid.a.deadband  [AXIS_3]DEADBAND
+setp   pid.a.maxoutput [AXIS_3]MAX_OUTPUT
 setp   pid.a.error-previous-target true
 setp   pid.a.maxerror .0005
 
