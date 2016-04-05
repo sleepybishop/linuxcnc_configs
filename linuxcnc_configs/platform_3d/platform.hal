@@ -1,7 +1,8 @@
 loadrt trivkins
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 loadrt hostmot2
-loadrt hm2_pci config="num_encoders=2 num_pwmgens=2 num_stepgens=10"
+loadrt hm2_pci config="num_encoders=2 num_pwmgens=2 num_stepgens=10 num_bspis=1"
+loadrt max31855_bspi bspi_chans=hm2_6i25.0.bspi.0
 setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
 setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
 setp    hm2_6i25.0.watchdog.timeout_ns 5000000
