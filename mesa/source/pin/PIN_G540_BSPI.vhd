@@ -132,11 +132,11 @@ package PIN_G540_BSPI is
 		IOPortTag & x"06" & StepGenTag & StepGenDirPin,   -- I/O 19 PIN 3   PIN 2
 		IOPortTag & x"06" & StepGenTag & StepGenStepPin,  -- I/O 20 PIN 4   PIN 15
 		IOPortTag & x"00" & BSPITag & BSPICS0Pin,         -- I/O 21 PIN 5   PIN 3 
-		IOPortTag & x"00" & BSPITag & BSPIOutPin,         -- I/O 22 PIN 6   PIN 16
+		IOPortTag & x"00" & BSPITag & BSPICS1Pin,         -- I/O 22 PIN 6   PIN 16
 		IOPortTag & x"00" & BSPITag & BSPIClkPin,         -- I/O 23 PIN 7   PIN 4
-		IOPortTag & x"07" & StepGenTag & StepGenStepPin,  -- I/O 24	PIN 8		PIN 17
-		IOPortTag & x"08" & StepGenTag & StepGenDirPin,   -- I/O 25	PIN 9		PIN 5
-		IOPortTag & x"08" & StepGenTag & StepGenStepPin,  -- I/O 26	PIN 11	PIN 6
+		IOPortTag & x"00" & BSPITag & BSPIFramePin,       -- I/O 24	PIN 8		PIN 17
+		IOPortTag & x"07" & StepGenTag & StepGenDirPin,   -- I/O 25	PIN 9		PIN 5
+		IOPortTag & x"07" & StepGenTag & StepGenStepPin,  -- I/O 26	PIN 11	PIN 6
 		IOPortTag & x"00" & SSerialTag & SSerialTX0Pin,   -- I/O 27	PIN 13	PIN 7
 		IOPortTag & x"00" & SSerialTag & SSerialRX0Pin,   -- I/O 28	PIN 15	PIN 8
 		IOPortTag & x"00" & SSerialTag & SSerialTX1Pin,   -- I/O 29	PIN 17	PIN 9
