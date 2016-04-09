@@ -360,9 +360,6 @@ net heater0-temp-cmd       => pid.h0.command
 net heater0-temp-fb        => pid.h0.feedback
 #net heater0-temp-fb       <= max31855-bspi.0.temp-celsius.0.in
 
-sets heater0-enable true
-sets heater0-temp-cmd 143.0
-
 # ---PWM Generator signals/setup---
 
 #setp   hm2_6i25.0.pwmgen.00.output-type 1
@@ -394,9 +391,6 @@ net heater1-output         => limit1.h1.in
 net heater1-output-clipped <= limit1.h1.out
 net heater1-temp-cmd       => pid.h1.command
 net heater1-temp-fb        => pid.h1.feedback
-
-sets heater1-enable true
-sets heater1-temp-cmd 52.0
 
 # ---PWM Generator signals/setup---
 
