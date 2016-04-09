@@ -3,10 +3,13 @@ loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AX
 loadrt hostmot2
 loadrt hm2_pci config="num_encoders=2 num_pwmgens=2 num_stepgens=10 num_bspis=1"
 loadrt max31855_bspi bspi_chans=hm2_6i25.0.bspi.0
+
 setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
 setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
 setp    hm2_6i25.0.watchdog.timeout_ns 5000000
-loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.s
+
+loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.s,pid.h0,pid.h1
+loadrt limit1 names=limit1.h0,limit1.h1
 
 addf hm2_6i25.0.read          servo-thread
 addf motion-command-handler   servo-thread
@@ -16,6 +19,10 @@ addf pid.y.do-pid-calcs       servo-thread
 addf pid.z.do-pid-calcs       servo-thread
 addf pid.a.do-pid-calcs       servo-thread
 addf pid.s.do-pid-calcs       servo-thread
+addf pid.h0.do-pid-calcs      servo-thread
+addf pid.h1.do-pid-calcs      servo-thread
+addf limit1.h0                servo-thread
+addf limit1.h1                servo-thread
 addf hm2_6i25.0.write         servo-thread
 
 # ---Chargepump StepGen: 0.25 velocity = 10Khz square wave output---
@@ -230,7 +237,7 @@ net z-neg-limit     =>  axis.2.neg-lim-sw-in
 net z-pos-limit     =>  axis.2.pos-lim-sw-in
 
 #*******************
-#  AXIS A (Extruder)
+#  AXIS A (Extruder Motor)
 #*******************
 
 setp   pid.a.Pgain     [AXIS_3]P
@@ -325,6 +332,77 @@ net spindle-index-enable      <=>  motion.spindle-index-enable
 # ---Setup spindle at speed signals---
 
 sets spindle-at-speed true
+
+#*******************
+#  Heater 0 (Extruder heater block);
+#*******************
+
+setp   pid.h0.Pgain     [HEATER_0]P
+setp   pid.h0.Igain     [HEATER_0]I
+setp   pid.h0.Dgain     [HEATER_0]D
+setp   pid.h0.bias      [HEATER_0]BIAS
+setp   pid.h0.FF0       [HEATER_0]FF0
+setp   pid.h0.FF1       [HEATER_0]FF1
+setp   pid.h0.FF2       [HEATER_0]FF2
+setp   pid.h0.deadband  [HEATER_0]DEADBAND
+setp   pid.h0.maxoutput [HEATER_0]MAX_OUTPUT
+setp   pid.h0.error-previous-target true
+setp   pid.h0.maxerror 2000.0
+
+setp   limit1.h0.min 0
+
+net heater0-index-enable  <=> pid.h0.index-enable
+net heater0-enable         => pid.h0.enable
+net heater0-output         <= pid.h0.output
+net heater0-output         => limit1.h0.in
+net heater0-output-clipped <= limit1.h0.out
+net heater0-temp-cmd       => pid.h0.command
+net heater0-temp-fb        => pid.h0.feedback
+#net heater0-temp-fb       <= max31855-bspi.0.temp-celsius.0.in
+
+sets heater0-enable true
+sets heater0-temp-cmd 143.0
+
+# ---PWM Generator signals/setup---
+
+#setp   hm2_6i25.0.pwmgen.00.output-type 1
+#setp   hm2_6i25.0.pwmgen.00.value  <= heater0-output_clipped
+#setp   hm2_6i25.0.pwmgen.00.scale  [HEATER_0]OUTPUT_SCALE
+
+#*******************
+#  Heater 1 (Print Surface);
+#*******************
+
+setp   pid.h1.Pgain     [HEATER_1]P
+setp   pid.h1.Igain     [HEATER_1]I
+setp   pid.h1.Dgain     [HEATER_1]D
+setp   pid.h1.bias      [HEATER_1]BIAS
+setp   pid.h1.FF0       [HEATER_1]FF0
+setp   pid.h1.FF1       [HEATER_1]FF1
+setp   pid.h1.FF2       [HEATER_1]FF2
+setp   pid.h1.deadband  [HEATER_1]DEADBAND
+setp   pid.h1.maxoutput [HEATER_1]MAX_OUTPUT
+setp   pid.h1.error-previous-target true
+setp   pid.h1.maxerror 2000.0
+
+setp   limit1.h1.min 0
+
+net heater1-index-enable  <=> pid.h1.index-enable
+net heater1-enable         => pid.h1.enable
+net heater1-output         <= pid.h1.output
+net heater1-output         => limit1.h1.in
+net heater1-output-clipped <= limit1.h1.out
+net heater1-temp-cmd       => pid.h1.command
+net heater1-temp-fb        => pid.h1.feedback
+
+sets heater1-enable true
+sets heater1-temp-cmd 52.0
+
+# ---PWM Generator signals/setup---
+
+#setp   hm2_6i25.0.pwmgen.00.output-type 1
+#setp   hm2_6i25.0.pwmgen.00.value  <= heater1-output_clipped
+#setp   hm2_6i25.0.pwmgen.00.scale  [HEATER_1]OUTPUT_SCALE
 
 
 #******************************
