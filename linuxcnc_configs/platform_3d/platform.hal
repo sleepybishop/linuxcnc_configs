@@ -1,8 +1,8 @@
 loadrt trivkins
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 loadrt hostmot2
-loadrt hm2_pci config="num_encoders=2 num_pwmgens=2 num_stepgens=10 num_bspis=1"
-loadrt max31855_bspi bspi_chans=hm2_6i25.0.bspi.0
+loadrt hm2_pci 
+loadrt max31855 count=1
 
 setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
 setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
@@ -12,6 +12,7 @@ loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.s,pid.h0,pid.h1
 loadrt limit1 names=limit1.h0,limit1.h1
 
 addf hm2_6i25.0.read          servo-thread
+addf hm2_6i25.0.write         servo-thread
 addf motion-command-handler   servo-thread
 addf motion-controller        servo-thread
 addf pid.x.do-pid-calcs       servo-thread
@@ -23,7 +24,16 @@ addf pid.h0.do-pid-calcs      servo-thread
 addf pid.h1.do-pid-calcs      servo-thread
 addf limit1.h0                servo-thread
 addf limit1.h1                servo-thread
-addf hm2_6i25.0.write         servo-thread
+addf max31855.0.bitbang-spi  servo-thread
+
+# ---bitbang spi pins---
+setp hm2_6i25.0.gpio.023.is_output  true
+setp hm2_6i25.0.gpio.024.is_output  true
+
+net spi_clk hm2_6i25.0.gpio.023.out     max31855.0.clk.out
+net spi_cs  hm2_6i25.0.gpio.024.out     max31855.0.cs.out
+net spi_d0  hm2_6i25.0.gpio.033.in_not  max31855.0.data.0.in
+net spi_d1  hm2_6i25.0.gpio.031.in_not  max31855.0.data.1.in
 
 # ---Chargepump StepGen: 0.25 velocity = 10Khz square wave output---
 
@@ -347,24 +357,22 @@ setp   pid.h0.FF2       [HEATER_0]FF2
 setp   pid.h0.deadband  [HEATER_0]DEADBAND
 setp   pid.h0.maxoutput [HEATER_0]MAX_OUTPUT
 setp   pid.h0.error-previous-target true
-setp   pid.h0.maxerror 2000.0
 
 setp   limit1.h0.min 0
 
 net heater0-index-enable  <=> pid.h0.index-enable
-net heater0-enable         => pid.h0.enable
+net heater0-enable         => pid.h0.enable hm2_6i25.0.pwmgen.01.enable
 net heater0-output         <= pid.h0.output
 net heater0-output         => limit1.h0.in
-net heater0-output-clipped <= limit1.h0.out
+net heater0-output-clipped <= limit1.h0.out => hm2_6i25.0.pwmgen.01.value
 net heater0-temp-cmd       => pid.h0.command
 net heater0-temp-fb        => pid.h0.feedback
-#net heater0-temp-fb       <= max31855-bspi.0.temp-celsius.0.in
+net heater0-temp-fb       <= max31855.0.temp-celsius.0.in
 
 # ---PWM Generator signals/setup---
 
-#setp   hm2_6i25.0.pwmgen.00.output-type 1
-#setp   hm2_6i25.0.pwmgen.00.value  <= heater0-output_clipped
-#setp   hm2_6i25.0.pwmgen.00.scale  [HEATER_0]OUTPUT_SCALE
+setp hm2_6i25.0.pwmgen.01.output-type 1
+setp hm2_6i25.0.pwmgen.01.scale  [HEATER_0]OUTPUT_SCALE
 
 #*******************
 #  Heater 1 (Print Surface);
@@ -380,7 +388,6 @@ setp   pid.h1.FF2       [HEATER_1]FF2
 setp   pid.h1.deadband  [HEATER_1]DEADBAND
 setp   pid.h1.maxoutput [HEATER_1]MAX_OUTPUT
 setp   pid.h1.error-previous-target true
-setp   pid.h1.maxerror 2000.0
 
 setp   limit1.h1.min 0
 
@@ -391,12 +398,13 @@ net heater1-output         => limit1.h1.in
 net heater1-output-clipped <= limit1.h1.out
 net heater1-temp-cmd       => pid.h1.command
 net heater1-temp-fb        => pid.h1.feedback
+net heater1-temp-fb       <= max31855.0.temp-celsius.1.in
 
 # ---PWM Generator signals/setup---
 
-#setp   hm2_6i25.0.pwmgen.00.output-type 1
-#setp   hm2_6i25.0.pwmgen.00.value  <= heater1-output_clipped
-#setp   hm2_6i25.0.pwmgen.00.scale  [HEATER_1]OUTPUT_SCALE
+setp   hm2_6i25.0.pwmgen.02.output-type 1
+setp   hm2_6i25.0.pwmgen.02.value  <= heater1-output_clipped
+setp   hm2_6i25.0.pwmgen.02.scale  [HEATER_1]OUTPUT_SCALE
 
 
 #******************************
