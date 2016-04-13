@@ -3,13 +3,12 @@ loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AX
 loadrt hostmot2
 loadrt hm2_pci 
 loadrt max31855 count=1
+loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.s,pid.h0,pid.h1
+loadrt limit1 names=limit1.h0,limit1.h1
 
 setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
 setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
 setp    hm2_6i25.0.watchdog.timeout_ns 5000000
-
-loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.s,pid.h0,pid.h1
-loadrt limit1 names=limit1.h0,limit1.h1
 
 addf hm2_6i25.0.read          servo-thread
 addf hm2_6i25.0.write         servo-thread
