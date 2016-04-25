@@ -13,6 +13,7 @@ addf motion-controller servo-thread
 net J0pos axis.0.motor-pos-cmd => axis.0.motor-pos-fb
 net J1pos axis.1.motor-pos-cmd => axis.1.motor-pos-fb
 net J2pos axis.2.motor-pos-cmd => axis.2.motor-pos-fb
+net J3pos axis.3.motor-pos-cmd => axis.3.motor-pos-fb
 
 # estop loopback
 net estop-loop iocontrol.0.user-enable-out => iocontrol.0.emc-enable-in
