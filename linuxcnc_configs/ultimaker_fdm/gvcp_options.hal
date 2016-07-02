@@ -1,0 +1,15 @@
+# _DO NOT_ include your HAL commands here.
+# Put custom HAL commands in custom_gvcp.hal
+
+net heater0-enable => gladevcp.heater0-enable
+net heater0-temp-fb => gladevcp.heater0-temp-fb
+net heater0-temp-cmd => gladevcp.heater0-temp-cmd
+net heater0-output-clipped => gladevcp.heater0-output-clipped
+
+net heater1-enable => gladevcp.heater1-enable
+net heater1-temp-fb => gladevcp.heater1-temp-fb
+net heater1-temp-cmd => gladevcp.heater1-temp-cmd
+net heater1-output-clipped => gladevcp.heater1-output-clipped
+
+# **** Setup GLADE MDI buttons ****
+#net machine-is-on          =>    gladevcp.button-box-active
