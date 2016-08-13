@@ -8,13 +8,13 @@ loadrt max31855 count=1 personality=2
 loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.h0,pid.h1
 loadrt limit1 names=limit1.h0,limit1.h1
 
-#setp hm2_6i25.0.gpio.023.is_output  true
-#setp hm2_6i25.0.gpio.024.is_output  true
+setp hm2_6i25.0.gpio.025.is_output  true
+setp hm2_6i25.0.gpio.026.is_output  true
 
-#net spi_clk hm2_6i25.0.gpio.023.out     max31855.0.clk.out
-#net spi_cs  hm2_6i25.0.gpio.024.out     max31855.0.cs.out
-#net spi_d0  hm2_6i25.0.gpio.033.in_not  max31855.0.data.0.in
-#net spi_d1  hm2_6i25.0.gpio.032.in_not  max31855.0.data.1.in
+net spi_clk hm2_6i25.0.gpio.025.out     max31855.0.clk.out
+net spi_cs  hm2_6i25.0.gpio.026.out     max31855.0.cs.out
+net spi_d0  hm2_6i25.0.gpio.033.in_not  max31855.0.data.0.in
+net spi_d1  hm2_6i25.0.gpio.032.in_not  max31855.0.data.1.in
 
 setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
 setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
@@ -300,19 +300,18 @@ setp   pid.h1.error-previous-target true
 setp   limit1.h1.min 0
 
 net heater1-index-enable  <=> pid.h1.index-enable
-net heater1-enable         => pid.h1.enable
+net heater1-enable         => pid.h1.enable hm2_6i25.0.pwmgen.02.enable
 net heater1-output         <= pid.h1.output
 net heater1-output         => limit1.h1.in
-net heater1-output-clipped <= limit1.h1.out
+net heater1-output-clipped <= limit1.h1.out => hm2_6i25.0.pwmgen.02.value
 net heater1-temp-cmd       => pid.h1.command
 net heater1-temp-fb        => pid.h1.feedback
 net heater1-temp-fb       <= max31855.0.temp-celsius.1
 
 # ---PWM Generator signals/setup---
 
-#setp   hm2_6i25.0.pwmgen.02.output-type 1
-#setp   hm2_6i25.0.pwmgen.02.value  <= heater1-output_clipped
-#setp   hm2_6i25.0.pwmgen.02.scale  [HEATER_1]OUTPUT_SCALE
+setp   hm2_6i25.0.pwmgen.02.output-type 1
+setp   hm2_6i25.0.pwmgen.02.scale  [HEATER_1]OUTPUT_SCALE
 
 
 #******************************
