@@ -216,7 +216,7 @@ begin
 
 	
 
-	ascfifo: process (clk,SCPopData,SFrameCount) -- send counter fifo
+	ascfifo: process (clk,SCPopData,SFrameCount) -- send counterrp32 6300 fifo
 	begin
 		if rising_edge(clk) then
 			if pushsc = '1'  and PopSC = '0'  then

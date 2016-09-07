@@ -95,7 +95,7 @@ use work.@Pin@.all;
 -- 34 I/O pinouts for 5I25, 5I26 and 6I25:
 
 --use work.PIN_7I76x2_34.all;  			-- 5i25/6 step config for 2X 7I76 step/dir breakout
---use work.PIN_7I76x2R_34.all;  			-- Reversed 5i25/6 step config for 2X 7I76 step/dir breakou
+--use work.PIN_7I76x2R_34.all;  			-- Reversed 5i25/6 step config for 2X 7I76 step/dir breakout
 --use work.PIN_G540x2_34.all;  			-- 5i25/6 step config for 2X Gecko 540
 --use work.PIN_7I76_7I74_34.all;			-- 5i25/6 step config for 7I76 step/dir breakout (P3) and 7I74 SSerial breakout (P2)
 --use work.PIN_7I74_7I76_34.all;			-- 5i25/6 step config for 7I76 step/dir breakout (P2) and 7I74 SSerial breakout (P3)
@@ -124,8 +124,8 @@ use work.@Pin@.all;
 --use work.PIN_FALLBACK_34.all;			-- IO only configuration for fast compiles whilst debugging PCI and fallback config
 --use work.PIN_MX3660x2_34.all;			-- config for Leadshine MX3660 triple step motor drive
 --use work.PIN_7I77x1_IMS_34.all;		-- config for 7I77 with spindle index mask
---use work.PIN_7I85SP_7I85_34.all;		-- config for PWM/enc on P3 7I85S plus ss and encoder on P2 7I85
---use work.PIN_DRINGx2_34.all;				-- 5i25/6 step config for Dring laser BOB
+--use work.PIN_7I85SP_7I85_34.all;			-- config for PWM/enc on P3 7I85S plus ss and encoder on P2 7I85
+
 
 --Non standard
 --use work.PIN_7I77_7I76_micges_34.all;  		-- 5i25/6 analog servo config+ 7i76 step/dir config for 7I77 and 7I76
@@ -142,7 +142,6 @@ use work.@Pin@.all;
 --use work.PIN_7I77_SSI_7I74_34.all;	-- 7I77 + 7I74 with 1 SSI on 7I77 exp
 --use work.PIN_7I77_7I76P_34.all;  		-- 5i25/6 analog servo config+ 7i76 PWM/DIR config for 7I77 and 7I76
 --use work.PIN_7I77_7I74_34_toromatic.all;
---use work.PIN_7I77_GBOB_34.all;
 --use work.PIN_7I76x2_ssi_34.all;
 --use work.PIN_7I76x2_biss_34.all;
 --use work.PIN_7I76x2ST_34.all;
@@ -159,7 +158,6 @@ use work.@Pin@.all;
 --use work.PIN_SVSS8_8_42.all;			-- 8 encoder + 8 sserial channels
 --use work.PIN_SVSI8_8_42.all;			-- 8 encoder + 8 SSI channels
 --use work.PIN_SVBI8_4_42.all;			-- 8 encoder + 4 BISS channels
---use work.PIN_SVBI8_1T_42.all;			-- 8 encoder + 1 test BISS channel
 --use work.PIN_FALLBACK_42.all;			-- IO only configuration 
 
 -- 72 I/O pinouts for the 5I24/6I24
@@ -221,6 +219,7 @@ entity TopPCIHostMot2 is -- for 5I24,5I25, 5I26, 6I25 PCI target mode
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;			-- PWM resolution is PWMRefWidth-1 bits 
 		IDROMType: integer := 3;		
+		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := true;			--- note this will pull in PWM ref
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -363,7 +362,6 @@ signal ReadSPICS : std_logic;
 -- ICap interface		
 
 signal LoadICap : std_logic;
-signal ReadICapCookie : std_logic;
 signal ICapI : std_logic_vector(15 downto 0);
 signal ICapClock : std_logic;
 signal ICapTimer : std_logic_vector(3 downto 0) := "0000";
@@ -477,6 +475,7 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
+		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
@@ -787,7 +786,6 @@ ahostmot2: entity work.HostMot2
 	ICapDecode : process(A,WriteStb,NCBE) 
 	begin
 		LoadICap <= decodedstrobe2(A(15 downto 0),x"0078",WriteStb,not (NCBE(0) or NCBE(1)));
-		ReadICapCookie <= decodedstrobe2(A(15 downto 0),x"0078",ReadStb,not (NCBE(0) or NCBE(1) or NCBE(2) or NCBE(3)));
 	end process ICAPDecode;
 
 	ICapSupport: process (PCLK,LoadICap)
@@ -801,10 +799,6 @@ ahostmot2: entity work.HostMot2
 				ICapTimer <= ICapTimer -1;
 			end if;				
 			ICapClock <= ((not ICapTImer(3)) and ICapTimer(2));	-- 4 counts wide , 8 counts late 
-		end if;	
-		D <= (others => 'Z');
-		if ReadICAPCookie = '1' then
-			D <= x"1CAB1CAB";
 		end if;	
 	end process ICapSupport;	
 	
