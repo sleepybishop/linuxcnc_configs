@@ -10,7 +10,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 -- the choice of one of the two following sets of free software/open source
 -- licensing terms:
 --
---    * GNU General Public License (GPL), version 2.0 or laterz
+--    * GNU General Public License (GPL), version 2.0 or later
 --    * 3-clause BSD License
 -- 
 --
