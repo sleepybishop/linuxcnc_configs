@@ -80,7 +80,7 @@ package mojov3_x9card is
 		constant IOWidth: integer := 72;
 		constant PortWidth: integer := 24;
 		constant LIOWidth: integer := 6;
-		constant LEDCount: integer := 2;
+		constant LEDCount: integer := 6;
 		constant	SepClocks: boolean := true;
 		constant OneWS: boolean := false;
 end package mojov3_x9card;
