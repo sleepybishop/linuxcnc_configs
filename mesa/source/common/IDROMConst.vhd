@@ -108,6 +108,9 @@ package IDROMConst is
 	constant BoardName3X20 : std_logic_vector(31 downto 0) := x"30325833";		-- 3X20
 	constant BoardName3X21 : std_logic_vector(31 downto 0) := x"30325833";		-- 3X21
 	constant BoardName7I90 : std_logic_vector(31 downto 0) := x"30394937";		-- 7I90
+	constant BoardName7I91 : std_logic_vector(31 downto 0) := x"31394937";		-- 7I91
+	constant BoardName7I92 : std_logic_vector(31 downto 0) := x"32394937";		-- 7I92
+	constant BoardName7I93 : std_logic_vector(31 downto 0) := x"33394937";		-- 7I93
 	
 	constant IDROMOffset : std_logic_vector(31 downto 0) := x"0000"&IDROMAddr&x"00"; -- note need to change if pitch changed
 	constant IDROMWEnAddr : std_logic_vector(7 downto 0) := x"08";
@@ -350,6 +353,9 @@ package IDROMConst is
 	constant ClockLow76: integer :=  100000000;		-- 7I76E low speed clock
 	constant ClockLow80: integer :=  100000000;		-- 7I80 low speed clock
 	constant ClockLow90: integer :=  100000000;		-- 7I90 low speed clock
+	constant ClockLow91: integer :=  100000000;		-- 7I91 low speed clock
+	constant ClockLow92: integer :=  100000000;		-- 7I92 low speed clock
+	constant ClockLow93: integer :=  100000000;		-- 7I93 low speed clock
 
 	constant ClockMed20: integer    := 50000000;		-- 5I20/4I65 medium speed clock
 	constant ClockMed21: integer    := 72000000;		-- 5I21 medium speed clock
@@ -367,6 +373,9 @@ package IDROMConst is
 	constant ClockMed76: integer    := 100000000;	-- 7I76E medium speed clock
 	constant ClockMed80: integer    := 100000000;	-- 7I80 medium speed clock
 	constant ClockMed90: integer    := 100000000;	-- 7I90 medium speed clock
+	constant ClockMed91: integer    := 100000000;	-- 7I91 medium speed clock
+	constant ClockMed92: integer    := 100000000;	-- 7I92 medium speed clock
+	constant ClockMed93: integer    := 100000000;	-- 7I93 medium speed clock
 	
 	constant ClockHigh20: integer    := 100000000;	-- 5I20/4I65 high speed clock
 	constant ClockHigh21: integer    := 96000000;	-- 5I21 high speed clock
@@ -385,6 +394,9 @@ package IDROMConst is
 	constant ClockHigh76: integer    := 200000000;	-- 7I76E high speed clock
 	constant ClockHigh80: integer    := 200000000;	-- 7I80 high speed clock
 	constant ClockHigh90: integer    := 200000000;	-- 7I90 high speed clock
+	constant ClockHigh91: integer    := 200000000;	-- 7I91 high speed clock
+	constant ClockHigh92: integer    := 200000000;	-- 7I92 high speed clock
+	constant ClockHigh93: integer    := 200000000;	-- 7I93 high speed clock
 	
 	constant ClockLowTag: std_logic_vector(7 downto 0) := x"01";
 
