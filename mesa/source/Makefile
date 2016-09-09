@@ -1,9 +1,8 @@
 #
 # requires xilinx webpack ise (tested with 14.7)
 #
-BOARD=6i25
-CHIP=spartan6
-PART=xc6slx9-tqg144-2
+CHIP:=spartan6
+PART:=xc6slx9-tqg144-2
 
 TARGET_BITFILES=\
 6i25_G540x2_34.bit\
@@ -11,13 +10,30 @@ TARGET_BITFILES=\
 6i25_G540_7i76_34.bit\
 6i25_G540_7i76_CUSTOM_34.bit\
 
+TARGET_BITFILES=
+TARGET_BITFILES+=6i25_G540_7i76_CUSTOM_34.bit
+TARGET_BITFILES+=7i90spi_JUSTIO_72.bit
+TARGET_BITFILES+=mojov3spi_MOJOIO_72.bit
+TARGET_BITFILES+=7i92_G540_7i76_CUSTOM_34.bit
 
 all: $(TARGET_BITFILES)
 
-%.vhd:
-	sed s/@Card@/Sixi25_x9card/g top/TopPCIHostMot2.vhd | sed s/@Pin@/$(subst .vhd,,$(subst $(BOARD),PIN,$@))/g | sed s/TopPCIHostMot2/tophm2/g > $@
+board/mojov3spi.vhd: top/TopGCSPIHostMot2.vhd
+	sed s/@Card@/mojov3_x9card/g $< | sed s/TopGCSPIHostMot2/tophm2/g > $@
 
-%.prj: %.vhd
+board/7i90spi.vhd: top/TopGCSPIHostMot2.vhd
+	sed s/@Card@/i90_x9card/g $< | sed s/TopGCSPIHostMot2/tophm2/g > $@
+
+board/7i92.vhd: top/TopEthernet16HostMot2.vhd
+	sed s/@Card@/i92_x9card/g $< | sed s/TopEthernetHostMot2/tophm2/g > $@
+
+board/6i25.vhd: top/TopPCIHostMot2.vhd
+	sed s/@Card@/Sixi25_x9card/g $< | sed s/TopPCIHostMot2/tophm2/g > $@
+
+out/%.vhd: board/7i92.vhd board/6i25.vhd board/7i90spi.vhd board/mojov3spi.vhd
+	sed s/@Pin@/$(subst .vhd,,$(subst $(firstword $(subst _, ,$*)),PIN,$(notdir $@)))/g board/$(firstword $(subst _, ,$*)).vhd > $@
+
+%.prj: out/%.vhd
 	sh ./vhd2prj.sh $*
 
 %.xst:
@@ -28,8 +44,8 @@ all: $(TARGET_BITFILES)
 	mkdir -p xst/$*.tmp
 	xst -intstyle ise -ifn $< 
 
-%.ngd: %.ngc constraints/$(BOARD).ucf
-	ngdbuild -intstyle ise -dd _ngo -aut -nt timestamp -uc constraints/$(BOARD).ucf -p $(PART) $< $@
+%.ngd: %.ngc constraints/7i92.ucf constraints/6i25.ucf constraints/7i90spi.ucf constraints/mojov3spi.ucf
+	ngdbuild -intstyle ise -dd _ngo -aut -nt timestamp -uc constraints/$(firstword $(subst _, ,$*)).ucf -p $(PART) $< $@
  
 %.pcf: %.ngd
 	# map
@@ -46,5 +62,5 @@ clean:
 	$(RM) netlist.lst *.bld *.lso *.ngm *.ncd *.mrp *.map *.xrpt *.ngc *.ngd *.ngr *.pcf *.prj  *.srp *.xml *.syr *.xml *.xst
 	$(RM) -rf xlnx_auto_0_xdb _xmsgs _ngo xst 
 	$(RM) *.html *.log *.xpi *.unroutes *.ptwx *.par *.txt *.csv *.pas *.pad *.drc *.xwbt *.bgn 
-
+	$(RM) board/*.vhd out/*.vhd
 
