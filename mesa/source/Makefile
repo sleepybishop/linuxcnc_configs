@@ -1,6 +1,11 @@
+ifneq ($(origin XILINX),environment)
+$(error No XILINX enviroment settings found, source the relevant settings.sh into the shell before invoking make)
+endif
+
 #
 # requires xilinx webpack ise (tested with 14.7)
 #
+
 CHIP:=spartan6
 PART:=xc6slx9-tqg144-2
 
