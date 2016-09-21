@@ -19,4 +19,13 @@ the firmware is a simplified version of the [mesa hostmot2 firmware](https://git
  * mesa 7i92
  * embmicro mojo v3
  
+## raspberry pi 3 + mojo v3 fpga wiring
+
+| LINE  | RPI PIN | MOJO PIN |
+| ----- | ------- | -------- |
+| MOSI  | P1-19   | P41      |
+| MISO  | P1-21   | P40      |
+| CLK   | P1-23   | P50      |
+| CE0   | P1-24   | P51      |
+
 
