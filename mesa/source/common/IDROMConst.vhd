@@ -86,6 +86,7 @@ package IDROMConst is
 	constant HostMotNameHigh : std_logic_vector(31 downto 0) := x"32544F4D"; 	-- MOT2
 	
 	constant BoardNameMesa : std_logic_vector(31 downto 0) := x"4153454D";		-- MESA
+	constant BoardNameEMBM : std_logic_vector(31 downto 0) := x"4D424D45";		-- EMBM
 	constant BoardName4I65 : std_logic_vector(31 downto 0) := x"35364934";		-- 4I65
 	constant BoardName4I68 : std_logic_vector(31 downto 0) := x"38364934";		-- 4I68
 	constant BoardName4I69 : std_logic_vector(31 downto 0) := x"39364934";		-- 4I69
@@ -111,6 +112,7 @@ package IDROMConst is
 	constant BoardName7I91 : std_logic_vector(31 downto 0) := x"31394937";		-- 7I91
 	constant BoardName7I92 : std_logic_vector(31 downto 0) := x"32394937";		-- 7I92
 	constant BoardName7I93 : std_logic_vector(31 downto 0) := x"33394937";		-- 7I93
+	constant BoardNameMOJO : std_logic_vector(31 downto 0) := x"4F4A4F4D";		-- MOJO
 	
 	constant IDROMOffset : std_logic_vector(31 downto 0) := x"0000"&IDROMAddr&x"00"; -- note need to change if pitch changed
 	constant IDROMWEnAddr : std_logic_vector(7 downto 0) := x"08";

@@ -72,13 +72,13 @@ package mojov3_x9card is
 		constant ClockHigh: integer := ClockHigh90;
 		constant ClockMed: integer := ClockMed90;
 		constant ClockLow: integer := ClockLow90;
-		constant BoardNameLow : std_Logic_Vector(31 downto 0) := BoardNameMESA;
-		constant BoardNameHigh : std_Logic_Vector(31 downto 0) := BoardName7i90;
+		constant BoardNameLow : std_Logic_Vector(31 downto 0) := BoardNameEMBM;
+		constant BoardNameHigh : std_Logic_Vector(31 downto 0) := BoardNameMOJO;
 		constant FPGASize: integer := 9;
 		constant FPGAPins: integer := 144;
 		constant IOPorts: integer := 3;
 		constant IOWidth: integer := 72;
-		constant PortWidth: integer := 24;
+		constant PortWidth: integer := 72;
 		constant LIOWidth: integer := 6;
 		constant LEDCount: integer := 6;
 		constant	SepClocks: boolean := true;
