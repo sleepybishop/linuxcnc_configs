@@ -135,8 +135,8 @@ package PIN_G540_7I76_CUSTOM_34 is
 		IOPortTag & x"07" & StepGenTag & StepGenStepPin,  -- I/O 22	PIN 6   PIN 16
 		IOPortTag & x"08" & StepGenTag & StepGenDirPin,   -- I/O 23	PIN 7   PIN 4
 		IOPortTag & x"08" & StepGenTag & StepGenStepPin,  -- I/O 24	PIN 8   PIN 17
-		IOPortTag & x"00" & NullTag & NullTag,            -- I/O 25	PIN 9   PIN 5
-		IOPortTag & x"00" & NullTag & NullTag,            -- I/O 26	PIN 11	PIN 6
+		IOPortTag & x"00" & NullTag & NullPin,            -- I/O 25	PIN 9   PIN 5
+		IOPortTag & x"00" & NullTag & NullPin,            -- I/O 26	PIN 11	PIN 6
 		IOPortTag & x"00" & NullTag & NullPin,            -- I/O 27	PIN 13	PIN 7
 		IOPortTag & x"00" & NullTag & NullPin,            -- I/O 28	PIN 15	PIN 8
 		IOPortTag & x"01" & PWMTag & PWMAOutPin,          -- I/O 29	PIN 17	PIN 9
