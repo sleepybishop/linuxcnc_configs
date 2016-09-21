@@ -78,7 +78,7 @@ package mojov3_x9card is
 		constant FPGAPins: integer := 144;
 		constant IOPorts: integer := 3;
 		constant IOWidth: integer := 72;
-		constant PortWidth: integer := 72;
+		constant PortWidth: integer := 24;
 		constant LIOWidth: integer := 6;
 		constant LEDCount: integer := 6;
 		constant	SepClocks: boolean := true;
