@@ -154,8 +154,8 @@ entity TopGCSPIHostMot2 is -- for 7I90 in EPP mode
 				COM_SPIIN : in std_logic;
 				COM_SPIOUT : out std_logic;
 				COM_SPICS : in std_logic;
-				TEST0 : out std_logic;
-				RECONFIG : out std_logic;
+--				TEST0 : out std_logic;
+--				RECONFIG : out std_logic;
 				NINIT : out std_logic;
 				SPICLK : out std_logic;				-- config flash spi interface (FPGA is master)
 				SPIIN : in std_logic;
@@ -497,7 +497,7 @@ ahostmot2: entity work.HostMot2
 		end if;	
 		
 		COM_SPIOUT <= SPIRegOut(31);
-		TEST0 <= SPIReadRequest;
+--		TEST0 <= SPIReadRequest;
 	end process;
 		
 	
@@ -524,7 +524,7 @@ ahostmot2: entity work.HostMot2
 				end if;
 			end if;
 		end if;		
-		RECONFIG <= not ReConfigReg;
+--		RECONFIG <= not ReConfigReg;
 	end process doreconfig;	
 	
 	asimplspi: entity work.simplespi8	-- configuration serial EEPROM access SPI port
