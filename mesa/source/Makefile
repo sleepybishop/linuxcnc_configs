@@ -18,8 +18,8 @@ TARGET_BITFILES+=7i92_G540_7i76_CUSTOM_34.bit
 
 all: $(TARGET_BITFILES)
 
-board/mojov3spi.vhd: top/TopGCSPIHostMot2.vhd
-	sed s/@Card@/mojov3_x9card/g $< | sed s/TopGCSPIHostMot2/tophm2/g > $@
+board/mojov3spi.vhd: top/TopMOJOSPIHostMot2.vhd
+	sed s/@Card@/mojov3_x9card/g $< | sed s/TopMOJOSPIHostMot2/tophm2/g > $@
 
 board/7i90spi.vhd: top/TopGCSPIHostMot2.vhd
 	sed s/@Card@/i90_x9card/g $< | sed s/TopGCSPIHostMot2/tophm2/g > $@
