@@ -48,4 +48,5 @@ package() {
   # Delete man file, it is still owned by extra/tk
   rm ${pkgdir}/usr/share/man/mann/bitmap.n
   rm ${pkgdir}/usr/share/man/mann/busy.n
+	rm ${pkgdir}/usr/share/man/mann/graph.n
 }
