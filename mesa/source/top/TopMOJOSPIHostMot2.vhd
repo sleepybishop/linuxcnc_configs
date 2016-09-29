@@ -120,9 +120,7 @@ entity TopMOJOSPIHostMot2 is -- for mojo v3 spi
 				COM_SPIIN : in std_logic;
 				COM_SPIOUT : out std_logic;
 				COM_SPICS : in std_logic;
---				TEST0 : out std_logic;
 --				RECONFIG : out std_logic;
---				NINIT : out std_logic;
 				SPICLK : in  std_logic;                   -- avr spi interface (FPGA is slave)
 				SPIIN :  out std_logic;
 				SPIOUT : in  std_logic;
@@ -207,19 +205,29 @@ signal clk0_1: std_logic;
 signal RST  : std_logic;    -- reset signal
 
 -- signals for avr_interface
-signal channel      : std_logic_vector(3 downto 0);
-signal sample     : std_logic_vector(9 downto 0);
+signal channel        : std_logic_vector(3 downto 0);
+signal sample         : std_logic_vector(9 downto 0);
 signal sample_channel : std_logic_vector(3 downto 0);
-signal new_sample   : std_logic;
-signal tx_data      : std_logic_vector(7 downto 0);
-signal rx_data      : std_logic_vector(7 downto 0);
+signal new_sample     : std_logic;
+signal tx_data        : std_logic_vector(7 downto 0);
+signal rx_data        : std_logic_vector(7 downto 0);
 signal new_tx_data    : std_logic;
 signal new_rx_data    : std_logic;
-signal tx_busy      : std_logic;
+signal tx_busy        : std_logic;
 
 -- signals for UART echo test
 signal uart_data    : std_logic_vector(7 downto 0); -- data buffer for UART (holds last recieved/sent byte)
 signal data_to_send   : std_logic;          -- indicates data to send in uart_data
+
+-- signals for storing most recent sample from each adc
+signal last_sample0    : std_logic_vector(9 downto 0);
+signal last_sample1    : std_logic_vector(9 downto 0);
+signal last_sample4    : std_logic_vector(9 downto 0);
+signal last_sample5    : std_logic_vector(9 downto 0);
+signal last_sample6    : std_logic_vector(9 downto 0);
+signal last_sample7    : std_logic_vector(9 downto 0);
+signal last_sample8    : std_logic_vector(9 downto 0);
+signal last_sample9    : std_logic_vector(9 downto 0);
 
 begin
 
@@ -517,7 +525,6 @@ ahostmot2: entity work.HostMot2
 		end if;	
 		
 		COM_SPIOUT <= SPIRegOut(31);
---		TEST0 <= SPIReadRequest;
 	end process;
 		
 	ConfigDecode : process(AddrPtr,Read32,Write32) 
@@ -544,6 +551,40 @@ ahostmot2: entity work.HostMot2
 		end if;		
 --		RECONFIG <= not ReConfigReg;
 	end process doreconfig;	
-	
+
+	doADCtask : process(CLK, RST)
+	begin
+		if rising_edge(clk) then
+			if new_sample = '1' then            -- if there is a new sample available 
+				case sample_channel is
+					when "0000" => 
+						channel <= "0001";
+						last_sample0 <= sample;
+					when "0001" =>
+						channel <= "0100";
+						last_sample1 <= sample;
+					when "0100" =>
+						channel <= "0101";
+						last_sample4 <= sample;
+					when "0101" =>
+						channel <= "0110";
+						last_sample5 <= sample;
+					when "0110" =>
+						channel <= "0111";
+						last_sample6 <= sample;
+					when "0111" =>
+						channel <= "1000";
+						last_sample7 <= sample;
+					when "1000" =>
+						channel <= "1001";
+						last_sample8 <= sample;
+					when "1001" =>
+						channel <= "0000";
+						last_sample9 <= sample;
+					when others => null;
+				end case;
+			end if;
+		end if;
+	end process doADCtask;	
 end;
 
