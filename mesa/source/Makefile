@@ -12,7 +12,7 @@ PART:=xc6slx9-tqg144-2
 TARGET_BITFILES=
 TARGET_BITFILES+=6i25_G540_7i76_CUSTOM_34.bit
 TARGET_BITFILES+=7i90spi_JUSTIO_72.bit
-TARGET_BITFILES+=mojov3spi_MOJOIO_72.bit
+TARGET_BITFILES+=mojov3spi_MOJO_IO_72.bit
 TARGET_BITFILES+=mojov3spi_MOJO_ULTIMAKER_72.vhd
 TARGET_BITFILES+=7i92_G540_7i76_CUSTOM_34.bit
 
@@ -24,13 +24,16 @@ board/mojov3spi.vhd: top/TopMOJOSPIHostMot2.vhd
 board/7i90spi.vhd: top/TopGCSPIHostMot2.vhd
 	sed s/@Card@/i90_x9card/g $< | sed s/TopGCSPIHostMot2/tophm2/g > $@
 
+board/7i90.vhd: top/TopEPPSHostMot2.vhd
+	sed s/@Card@/i90_x9card/g $< | sed s/TopEPPSHostMot2/tophm2/g > $@
+
 board/7i92.vhd: top/TopEthernet16HostMot2.vhd
 	sed s/@Card@/i92_x9card/g $< | sed s/TopEthernetHostMot2/tophm2/g > $@
 
 board/6i25.vhd: top/TopPCIHostMot2.vhd
 	sed s/@Card@/Sixi25_x9card/g $< | sed s/TopPCIHostMot2/tophm2/g > $@
 
-out/%.vhd: board/7i92.vhd board/6i25.vhd board/7i90spi.vhd board/mojov3spi.vhd
+out/%.vhd: board/7i92.vhd board/6i25.vhd board/7i90spi.vhd board/7i90.vhd board/mojov3spi.vhd
 	sed s/@Pin@/$(subst .vhd,,$(subst $(firstword $(subst _, ,$*)),PIN,$(notdir $@)))/g board/$(firstword $(subst _, ,$*)).vhd > $@
 
 %.prj: out/%.vhd
@@ -44,7 +47,7 @@ out/%.vhd: board/7i92.vhd board/6i25.vhd board/7i90spi.vhd board/mojov3spi.vhd
 	mkdir -p xst/$*.tmp
 	xst -intstyle ise -ifn $< 
 
-%.ngd: %.ngc constraints/7i92.ucf constraints/6i25.ucf constraints/7i90spi.ucf constraints/mojov3spi.ucf
+%.ngd: %.ngc constraints/7i92.ucf constraints/6i25.ucf constraints/7i90.ucf constraints/7i90spi.ucf constraints/mojov3spi.ucf
 	ngdbuild -intstyle ise -dd _ngo -aut -nt timestamp -uc constraints/$(firstword $(subst _, ,$*)).ucf -p $(PART) $< $@
  
 %.pcf: %.ngd
