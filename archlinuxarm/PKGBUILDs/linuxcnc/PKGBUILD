@@ -42,6 +42,9 @@ package() {
   cd $srcdir/$pkgname-$_commit/src
   make install DESTDIR=${pkgdir} || return 1
 
+  # move tcl libs
+  mv "${pkgdir}/usr/lib/tcltk" "${pkgdir}/usr/lib/tcl8.6"
+
   # install yapps for halcompile to work
   mkdir "${pkgdir}/usr/lib/python2.7/site-packages/yapps"
   cp -PR $srcdir/$pkgname-$_commit/lib/python/yapps/* "${pkgdir}/usr/lib/python2.7/site-packages/yapps/"
