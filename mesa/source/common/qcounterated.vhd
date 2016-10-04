@@ -1,7 +1,8 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
+use ieee.math_real.all;
 --
 -- Copyright (C) 2007, Peter C. Wallace, Mesa Electronics
 -- http://www.mesanet.com
@@ -67,111 +68,66 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --     POSSIBILITY OF SUCH DAMAGE.
 -- 
 
-entity wordpr is
-    generic (
-	 		size : integer;
-			buswidth : integer
-			);
-	 port (		
-	   	clear: in STD_LOGIC;
-			clk: in STD_LOGIC;
-			ibus: in STD_LOGIC_VECTOR (buswidth-1 downto 0);
-			obus: out STD_LOGIC_VECTOR (buswidth-1 downto 0);
-			loadport: in STD_LOGIC;
-			loadddr: in STD_LOGIC;
-			loadaltdatasrc: in STD_LOGIC;
-			loadopendrainmode: in STD_LOGIC;
-			loadinvert: in STD_LOGIC;
-			readddr: in STD_LOGIC;
-			portdata: out STD_LOGIC_VECTOR (size-1 downto 0);
-			altdata: in STD_LOGIC_VECTOR (size-1 downto 0)
- 			);
-end wordpr;
+entity qcounterated is
+    generic ( clock : integer);
+	 port ( ibus : in  std_logic_vector (31 downto 0);
+		     obus : out  std_logic_vector (31 downto 0);	 
+           loadrate : in  std_logic;
+			  loadtimerselect : in  std_logic;
+			  readtimerselect : in  std_logic;
+			  timers : in std_logic_vector(4 downto 0);
+			  timer : out std_logic;
+           timerenable : out std_logic;
+           rateout : out  std_logic;
+			  clk : in std_logic);
+			  
+end qcounterated;
 
-architecture behavioral of wordpr is
-
-signal outreg: std_logic_vector (size-1 downto 0);
-signal ddrreg: std_logic_vector (size-1 downto 0):= (others => '0');
-signal tsoutreg: std_logic_vector (size-1 downto 0);
-signal opendrainsel: std_logic_vector (size-1 downto 0):= (others => '0');
-signal altdatasel: std_logic_vector (size-1 downto 0):= (others => '0');
-signal invertsel: std_logic_vector (size-1 downto 0):= (others => '0') ;
-signal tdata: std_logic_vector (size-1 downto 0);
-signal tddr: std_logic_vector (size-1 downto 0);
+architecture Behavioral of qcounterated is
+constant defaultdivisor : real := round((real(clock)/16000000.0)) -2.0;
+signal rate: std_logic_vector(11 downto 0) := std_logic_vector(to_unsigned(integer(defaultdivisor),12)); 
+signal count: std_logic_vector (11 downto 0); 
+alias  countmsb: std_logic is  count(11);
+signal timerselect: std_logic_vector(3 downto 0);
 
 begin
-	awordioport: process (
-								clk,
-								ibus,
-								loadport,
-								loadddr,
-								readddr,
-								outreg,
-								ddrreg,
-								altdatasel, 
-								invertsel, 
-								altdata, 
-								tdata,
-								tsoutreg,
-								opendrainsel)
+	arate: process (clk,count)
 	begin
-		if rising_edge(clk) then
-			if loadport = '1'  then
-				outreg <= ibus(size-1 downto 0);
-			end if; 
-			if loadddr = '1' then
-				ddrreg <= ibus(size-1 downto 0);
-			end if;
-			if loadaltdatasrc = '1' then
-				altdatasel <= ibus(size-1 downto 0);
-			end if;
-			if loadopendrainmode = '1' then
-				opendrainsel <= ibus(size-1 downto 0);
-			end if;
-			if loadinvert = '1' then
-				invertsel <= ibus(size-1 downto 0);
-			end if;
-			if clear = '1' then 
-				ddrreg <= (others => '0'); 
-				opendrainsel <= (others => '0');	
-			end if;
-		end if; -- clk
-
-		for i in 0 to size-1 loop
-			if altdatasel(i) = '0' then
-				if invertsel(i) = '0' then			-- normal output data, normal outputs can be inverted
-					tdata(i) <= outreg(i);
-				else
-					tdata(i) <= not outreg(i);
-				end if;						
+		report("Encoder rate divisor: "& real'image(defaultdivisor));
+		if rising_edge(clk) then	
+			if countmsb= '0' then 
+				count <= count -1;
 			else
-				if invertsel(i) = '0' then			-- alternate output data, alternate outputs can be inverted
-					tdata(i) <= altdata(i);
-				else
-					tdata(i) <= not altdata(i);
-				end if;							
+				count <= rate;
 			end if;
-			if opendrainsel(i) = '0' then				-- normal DDR	
-				if (ddrreg(i) = '1')  then 
-					tsoutreg(i) <= tdata(i);
-				else
-					tsoutreg(i) <= 'Z';
-				end if;
-			else	
-				if tdata(i) = '0' then 				-- open drain option = active pulldown
-					tsoutreg(i) <= '0';
-				else
-					tsoutreg(i) <= 'Z';
-				end if;
+			if loadrate = '1' then
+			   rate <= ibus(11 downto 0);
 			end if;
-		end loop;
+			if loadtimerselect = '1' then
+				timerselect <= ibus(15 downto 12);
+			end if;			
 		
-		portdata <= tsoutreg;
+		end if;	-- clk
+
 		obus <= (others => 'Z');
-		if readddr = '1' then
-			obus(size-1 downto 0) <= ddrreg;
-			obus(buswidth -1 downto size) <= (others => '0');
-		end if;
+		if readtimerselect = '1' then
+			obus(15 downto 12) <= timerselect;
+			obus(11 downto 0) <= (others => '0');	
+			obus(31 downto 16) <= (others => '0');	
+		end if;	
+		
+		case timerselect(2 downto 0) is
+			when "000" => timer <= timers(0);
+			when "001" => timer <= timers(1);
+			when "010" => timer <= timers(2);
+			when "011" => timer <= timers(3);
+			when "100" => timer <= timers(4);	
+			when others => timer <= timers(0);
+		end case;
+		
+		timerenable <= timerselect(3);	
+		rateout <= countmsb;
 
 	end process;
-end behavioral;
+
+end Behavioral;

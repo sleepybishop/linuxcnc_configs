@@ -76,27 +76,38 @@ use work.IDROMConst.all;
 
 -------------------- option selection area ----------------------------
 
+use work.@Card@.all;
 
 -------------------- select one card type------------------------------
-use work.@Card@.all;
+
 --use work.i80hd_x16card.all;
---use work.i80db_x16card.all; 		-- needs 7i80db.ucf and SP6 x16 256 pin
---use work.i80db_x25card.all; 	-- needs 7i80db.ucf and SP6 x25 256 pin
---use work.i80hd_x16card.all;             -- needs 7i80hd.ucf and SP6 x16 256 pin
---use work.i80hd_x25card.all; 	-- needs 7i80hd.ucf and SP6 x25 256 pin
---use work.i76E_x16card.all; 		-- needs 7i76e.ucf and SP6 x16 256 pin
---use work.i92_x9card.all; 		-- needs 7i92.ucf and SP6 x9 144 pin
+--use work.i80db_x16card.all; 			-- needs 7i80db.ucf and SP6 x16 256 pin
+--use work.i80db_x25card.all; 			-- needs 7i80db.ucf and SP6 x25 256 pin
+--use work.i80hd_x16card.all;      		-- needs 7i80hd.ucf and SP6 x16 256 pin
+--use work.i80hd_x25card.all; 			-- needs 7i80hd.ucf and SP6 x25 256 pin
+--use work.i76E_x16card.all;           -- needs 7i76e.ucf and SP6 x16 256 pin
+--use work.i92_x9card.all; 				-- needs 7i92.ucf and SP6 x9 144 pin
+--use work.i93_x9card.all; 				-- needs 7i93.ucf and SP6 x9 144 pin
 -----------------------------------------------------------------------
 
 use work.@Pin@.all;
 
 -------------------- select (or add) one pinout -----------------------
+--use work.PIN_FALLBACK_34.all;			-- IO only configuration for fast compiles whilst debugging PCI and fallback config
+--use work.PIN_G540x2D_34.all;  			-- 7i92 step config with DPLL for 2X Gecko 540
+--use work.PIN_7I76x1D_34.all;  			-- 7i92 step config with DPLL for 1X 7I76 step/dir breakout
+--use work.PIN_7I76x2D_34.all;  			-- 7i92 step config with DPLL for 1X 7I76 step/dir breakout
+--use work.PIN_R990x2D_34.all;			-- 7i92 step config with DPLL for 2x Rutex R990 MB
+--use work.PIN_DMMBOB1x2D_34.all;		-- DMM DBM4250 bob step/dir config with DPLL 
+--use work.PIN_MX3660x2D_34.all;			-- config for Leadshine MX3660 triple step motor drive
+--use work.PIN_7I77_7I76D_34.all;  		-- 7i92 analog servo config+ 7i76 step/dir config for 7I77 and 7I76
+--use work.PIN_7I76_7I74D_34.all;		-- 7i92 step config for 7I76 step/dir breakout (P3) and 7I74 SSerial breakout (P2)
+--use work.PIN_7I77_7I74D_34.all;  		-- 7i92 analog servo config for 7I77 analog servo breakout (P3) and 7I74 SSerial (P2)
 --use work.PIN_7I76x2_34.all;  			-- 7i92 step config for 2X 7I76 step/dir breakout
 --use work.PIN_7I76x2R_34.all;  			-- Reversed 7i92 step config for 2X 7I76 step/dir breakout
---use work.PIN_G540x2_34.all;  			-- 7i92 step config for 2X Gecko 540
---use work.PIN_7I76_7I74_34.all;			-- 7i92 step config for 7I76 step/dir breakout (P3) and 7I74 SSerial breakout (P2)
+--use work.PIN_7I76_7I74_34.all;		-- 7i92 step config for 7I76 step/dir breakout (P3) and 7I74 SSerial breakout (P2)
 --use work.PIN_7I74_7I76_34.all;			-- 7i92 step config for 7I76 step/dir breakout (P2) and 7I74 SSerial breakout (P3)
---use work.PIN_7I77x2_34.all;  			turn it offtake a look ant -- 7i92 analog servo config for 2X 7I77 analog servo breakout
+--use work.PIN_7I77x2_34.all;  			-- 7i92 analog servo config for 2X 7I77 analog servo breakout
 --use work.PIN_7I77x2R_34.all;  			-- Reversed 7i92 analog servo config for 2X 7I77 analog servo breakout
 --use work.PIN_7I77_7I74_34.all;  		-- 7i92 analog servo config for 7I77 analog servo breakout (P3) and 7I74 SSerial (P2)
 --use work.PIN_7I74_7I77_34.all;  		-- 7i92 analog servo config for 7I77 analog servo breakout (P2) and 7I74 SSerial (P3)
@@ -106,8 +117,9 @@ use work.@Pin@.all;
 --use work.PIN_7I78x2_34.all;				-- 7i92 step config for 2x 7I78 step/dir breakout 
 --use work.PIN_7I76_7I78_34.all;			-- 7i92 step config for 7I76 and 7I78 step/dir breakout 
 --use work.PIN_PROB_RFx2_34.all;			-- 7i92 step config for Probotix step/dir breakout
+--use work.PIN_PROB_RFx1_34.all;			-- 7i92 step config for Probotix step/dir breakout
 --use work.PIN_7I85x2_34.all;				-- 2x 7I85 encoder + sserial
---use work.PIN_7I85Sx2_34.all;			-- 2x 7I85S encoder + stepgens + sserial
+--use work.PIN_7I85Sx2D_34.all;			-- 2x 7I85S encoder + stepgens + sserial
 --use work.PIN_7I85SPx2_34.all;			-- 2x 7I85S encoder + pwmgens + sserial
 --use work.PIN_7I76_7I85S_34.all;		-- 7I76 and 7I85S
 --use work.PIN_7I76P_7I85_34.all;		-- 7I76 PWM and 7I85
@@ -115,29 +127,36 @@ use work.@Pin@.all;
 --use work.PIN_7I85S_7I78_34.all;		-- 7I85S and 7I78
 --use work.PIN_7I77_7I85S_34.all;		-- 7I77 +7I85S step/dir config
 --use work.PIN_7I77_7I85SP_34.all;		-- 7I77 +7I85S pwm/dir config
---use work.PIN_R990x2_34.all;				-- 7i92 step config for 2x Rutex R990 MB
---use work.PIN_DMMBOB1x2_34.all;			-- DMM DBM4250 bob step/dir config
---use work.PIN_FALLBACK_34.all;			-- IO only configuration for fast compiles whilst debugging PCI and fallback config
---use work.PIN_MX3660x2_34.all;			-- config for Leadshine MX3660 triple step motor drive
 --use work.PIN_7I77x1_IMS_34.all;		-- config for 7I77 with spindle index mask
 --use work.PIN_7I85SP_7I85_34.all;		-- config for PWM/enc on P3 7I85S plus ss and encoder on P2 7I85
+--use work.PIN_BISS_SSI_TEST_34.all;	
 
+--use work.PIN_TW17_34.all;
 
 -- 68 I/O pinouts for 7I80DB:
---use work.PIN_7i76x2_7i77x2_68.all;
 --use work.PIN_JUSTIO_68.all;
+--use work.PIN_7I76x3D_68.all;		
+--use work.PIN_7I76x4D_68.all; 			-- needs optimize for area on -16		
+--use work.PIN_7I76x2_7I77x1D_68.all;	
 --use work.PIN_7I77x4_68.all;
 --use work.PIN_7I77x4_MQ4_68.all;
+--use work.PIN_7I76x2_7I77x2D_68.all;		-- just barely fits in -16
 --use work.PIN_7I74x4_68.all;				-- 25 only
---use work.PIN_7I77x2_7I74x2_68.all;	-- borderline 25 only	
+--use work.PIN_7I77x2_7I74x2_68.all;	-- 25 only	
 --use work.PIN_7I76x2_7I74x2_68.all;	-- 25 only
---use work.PIN_7I76x3_7I74_68.all;		-- 25 only
---use work.PIN_7I76x3_68.all;			
---use work.PIN_7I76x2_7I77x2_68.all;		-- 25 only
+--use work.PIN_7I76x3_7I74_68.all;		-- 25 only	
+--use work.PIN_7I76x2_7I77x2_68.all;	-- 25 only
+--use work.PIN_7I76x2_7I77x2_68.all;	-- 25 only
 
 -- 51 pin pinouts for 7I76E
---use work.PIN_7I76E_51.all;
---use work.PIN_FALLBACK_51.all;
+--use work.PIN_7I76x1D_51.all;
+--use work.PIN_7I76x2D_51.all;
+--use work.PIN_7I76x3D_51.all;
+--use work.PIN_7I76x1PD_51.all;
+--use work.PIN_7I76X1_7I85x1D_51.all;
+--use work.PIN_7I76X1_7I77x1D_51.all;
+--use work.PIN_7I76X1_7I74x1D_51.all;
+--use work.PIN_JUSTIO_51.all;
 
 -- 72 pin pinouts for 7I80HD
 --use work.PIN_JUSTIO_72.all;
@@ -170,6 +189,7 @@ use work.@Pin@.all;
 --use work.PIN_SSSVST8_1_5_7I47_72.all;
 --use work.PIN_SVSS8_44_72.all;
 --use work.PIN_RMSVSS6_8_72.all;
+--use work.PIN_RMESVSS6_6_72.all;
 --use work.PIN_RMSVSS6_12_8_72.all; -- 4i69 5i24 7I80 only
 --use work.PIN_ST8_PLASMA_72.all;
 --use work.PIN_SV4_7I47S_72.all;
@@ -189,7 +209,38 @@ use work.@Pin@.all;
 --use work.PIN_SVTP2_SI2_UA4_72.all;
 --use work.PIN_SVSSSI6_4_4_72.all;
 
-----------------------------------------------------------------------
+-- 48 pin pinouts for 7I93
+
+
+--------------use work.PIN_SV8_48.all;
+--use work.PIN_JUSTIO_48.all;
+--use work.PIN_SV6_7I52S_48.all;
+--use work.PIN_SVSPD6_2_48.all;
+--use work.PIN_SPSVST_7I47_7I65_48.all;
+--use work.PIN_SVSP6_2_48.all;
+--use work.PIN_SVST4_4_48.all;
+--use work.PIN_SVST4_6_48.all;
+--use work.PIN_SVST2_4_7I47_48.all;
+--use work.PIN_SVST4_12_48.all ;
+--use work.PIN_SVSSP4_6_7I46_48.all;
+--use work.PIN_SVST2_4_7I47_48.all ;
+--use work.PIN_SVUA4_8_48.all;
+--use work.PIN_SVSS4_8_48.all; 
+--use work.PIN_SVSS4_4_48.all;
+--use work.PIN_SVSS6_6_48.all; 
+--use work.PIN_SVSS6_4_48.all;
+--use work.PIN_SVTW4_24_24_48.all ;
+--use work.PIN_SVTP4_7I39_48.all;
+--use work.PIN_SVST6_6_7I48_48.all;
+--use work.PIN_SVRM6_48.all;
+--use work.PIN_SISVST6_2_3_7I47_48.all;
+--use work.PIN_BOSSV.all ;
+--use work.PIN_Enslavko_48.all;
+--use work.PIN_SVSTS47S_44_48.all;
+--use work.PIN_RLUKEN_48.all;
+--use work.PIN_SVSI8_48.all;
+
+----------------------------------------------------------
 	
 	
 -- dont change anything below unless you know what you are doing -----
@@ -296,6 +347,7 @@ signal LocalLEDs : std_logic_vector(3 downto 0);
 signal LEDMode: std_logic;
 signal LEDErrFF: std_logic;
 signal WriteErrLED: std_logic;
+signal WDLBite: std_logic;
 
 signal ReadExtData : std_logic;
 signal WriteExtData : std_logic;
@@ -358,7 +410,6 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
@@ -394,8 +445,8 @@ ahostmot2: entity work.HostMot2
 --		int => INT, 
 		iobits => IOBITS,			
 		rates => Rates,
-		leds => HM2LEDS	
-
+		leds => HM2LEDS,	
+      wdlatchedbite => WDLBite 
 		);
 
 	
@@ -543,11 +594,11 @@ ahostmot2: entity work.HostMot2
 	DataRam : entity work.dpram 
 	generic map (
 		width => 16,
-		depth => 2048
+		depth => 4096
 				)
 	port map(
-		addra => mwadd(10 downto 0),
-		addrb => mradd(10 downto 0),
+		addra => mwadd(11 downto 0),
+		addrb => mradd(11 downto 0),
 		clk  => procclk,
 		dina  => mobus,
 --		douta => 
@@ -971,13 +1022,12 @@ ahostmot2: entity work.HostMot2
 	end generate;	
 		
 	donormal: if not fallback generate
-		NormalMode : process(LEDErrFF)
+		NormalMode : process(LEDErrFF,WDLBite)
 		begin
 --			NINIT <= 'Z';
-			NINIT <= not LEDErrFF;
+			NINIT <= (not LEDErrFF) and (not WDLBite);
 		end process;	
 	end generate;		
 		
-
 
 end Behavioral;

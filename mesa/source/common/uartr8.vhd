@@ -2,7 +2,8 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
-
+use ieee.math_real.all;
+use ieee.numeric_std.all;
 --
 -- Copyright (C) 2007, Peter C. Wallace, Mesa Electronics
 -- http://www.mesanet.com
@@ -71,7 +72,8 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Simple UART 
 entity uartr8 is
-	port (
+		generic( clock : integer);
+		port (
 		clk : in std_logic;
 	 	ibus : in std_logic_vector(7 downto 0);
       obus : out std_logic_vector(7 downto 0);
@@ -86,6 +88,7 @@ entity uartr8 is
 		readfifocount : in std_logic;
 		loadmode : in std_logic;
 		readmode : in std_logic;
+		loadfilter : in std_logic;
 		fifohasdata : out std_logic;
 		rxmask : in std_logic;
       rxdata : in std_logic
@@ -107,6 +110,7 @@ architecture Behavioral of uartr8 is
 
 -- uart interface related signals
 
+constant defaultfilter : real := round((real(clock)/5000000.0)); --default filter TC is 200 ns
 constant DDSWidth : integer := 20;
 
 signal BitrateDDSReg : std_logic_vector(DDSWidth-1 downto 0);
@@ -126,6 +130,10 @@ signal ModeReg: std_logic_vector(3 downto 0);
 alias FalseStart: std_logic is ModeReg(0); 
 alias OverRun: std_logic is ModeReg(1);
 alias RXMaskEn: std_logic is ModeReg(3); 
+signal FilterReg: std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(integer(defaultfilter),8)); 
+signal FilterCount: std_logic_vector(7 downto 0);
+signal rxdatad: std_logic;
+signal RXDataFilt: std_logic;
 
   component SRL16E
 --
@@ -195,10 +203,25 @@ begin
 									readbitratel, BitrateDDSReg, readbitratem, 
 									readbitrateh, popdata, readmode, ModeReg, rxmask, lfifoempty)
 	begin
+		report "Default FilterReg = " & integer'image(integer(defaultfilter));
 		if rising_edge(clk) then
-			RXPipe <= RXPipe(0) & rxdata;  			-- Two stage rx data pipeline to compensate for
+			RXDataD <= rxdata;
+			RXPipe <= RXPipe(0) & RXDataFilt;  		-- Two stage rx data pipeline to compensate for
 																-- two clock delay from start bit detection to acquire loop startup
-																		
+
+			if (RXDataD = '1') and (FilterCount < FilterReg) then		-- simple digital filter on rxdata
+				FilterCount <= FilterCount + 1;
+			end if;
+			if (RXDataD = '0') and (FilterCount /= 0) then 
+				FilterCount <= FilterCount -1;
+			end if;
+			if FilterCount >= FilterReg then
+				RXDataFilt<= '1';
+			end if;
+			if FilterCount = 0 then
+				RXDataFilt<= '0';
+			end if;
+															
 			if Go = '1' then 
 				BitRateDDSAccum <= BitRateDDSAccum + BitRateDDSReg;
 				if SampleTime = '1' then
@@ -227,7 +250,7 @@ begin
 				BitCount <= "1001";
 			end if;
 			
-			if Go = '0' and rxdata = '0' and (rxmask and RXMaskEn) = '0' then		-- start bit detection
+			if Go = '0' and RXDataFilt = '0' and (rxmask and RXMaskEn) = '0' then		-- start bit detection
 				Go <= '1';
 			end if;	
 			
@@ -249,6 +272,10 @@ begin
 			
 			if loadmode=  '1' then 
 				ModeReg <= ibus(3 downto 0);
+			end if;
+			
+			if loadfilter=  '1' then 
+				FilterReg <= ibus;
 			end if;
 
 		end if; -- clk

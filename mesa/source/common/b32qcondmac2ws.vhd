@@ -67,28 +67,28 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 --     POSSIBILITY OF SUCH DAMAGE.
 -- 
 -------------------------------------------------------------------------------
--- 16 bit Harvard Arch accumulator oriented processor ~135 S6 slices: 
+-- 32 bit Harvard Arch accumulator oriented processor ~490 slices: 
 -- 1 clk/inst, only exception is conditional jumps:
 -- 1 clock if not taken, 3 clocks if taken
--- ~100 MHz operation in Spartan6
--- 16 bit data, 24 bit instruction width
+-- ~70 MHz operation in Spartan3 ~40 MHz in Spartan2
+-- 32 bit data, 24 bit instruction width
 -- 64 JMP instructions: 
 -- All Ored true, false, dont-care combinations of sign, zero and carry
 -- 10 basic memory reference instructions:
 -- OR, XOR, AND, ADD, ADDC, SUB, SUBB, LDA, STA, MUL, MULS (ACC OP MEM --> ACC)
 -- OR, XOR, AND, ADD, ADDC, SUB, SUBB, LDA have writeback option (ACC OP MEM --> ACC,MEM)
--- 8 operate instructions, load immediate, rotate
--- NOP, LWI, WSWP, SXW, RCL, RCR, ASHR, LDPH
+-- Multiply has pipelined mac option with aux 40 bit accumulator
+-- 11 operate instructions, load immediate, rotate, mac clear and load bounded mac
+-- LXWI, LLWI, LHWI, WSWP, SXW, RCL, RCR, ASHR, CLRMAC, LDMACB, LDMACT?
 -- 14 index load/store/increment: 
--- LDY, LDX, LDZ, LDT, STY, STX, STZ, STT, ADDIX, ADDIY, ADDIZ, ADDIT 
--- PUSH, POP, LDSP, STSP
+-- LDY, LDX, LDZ, LDT, STY, STX, STZ, STT, ADDIX, ADDIY, ADDIZ, ADDIT, RTT, TTR  
 -- 4K words instruction space
 -- 4K words data space (exp to 32K words)
 -- 4 index registers for indirect memory access
 -- 12-15 bit offset for indirect addressing (ADD sinetable(6) etc)
 -- 12-15 bit direct memory addressing range
 -- 12-15 bit indirect addressing range with 12 bit offset range
--- 16 levels of subroutine call/return
+-- 2 levels of subroutine call/return
 -- Starts at address 0 from reset
 -- THE BAD NEWS: pipelined processor with no locks so --->
 -- Instruction hazards: 
@@ -98,16 +98,18 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 --   (option) No unconditional jumps in 2 instructions after a conditional jump 
 -- Data hazards:
 --   Stored data requires 3 instructions before fetch
+--   MAC data needs one extra instruction time after last MUL before transfer to ACC
 -- Address hazards:
 --   Fetches via index register require 2 instructions from ST(X,Y,Z,T),ADDI(X,Y) 
 --   to actual fetch (STA via index takes no extra delay) 
 -------------------------------------------------------------------------------
 
-entity D16w is
+entity Big32v2 is
 	generic(
-		width : integer := 16;			-- data width
+		width : integer := 32;			-- data width
 		iwidth	: integer := 24;		-- instruction width
 		maddwidth : integer := 12;	-- memory address width
+		macwidth : integer := 40;	-- macwidth
 		paddwidth : integer := 12	-- program counter width
        );
 	port (
@@ -123,13 +125,13 @@ entity D16w is
 		mread		: out std_logic; 											-- memory read signal
 		carryflg : out std_logic            							-- carry flag
 		);
-end D16w;
+end Big32v2;
 
 
-architecture Behavioral of D16w is
+architecture Behavioral of Big32v2 is
 
 
--- basic op codes												-- IIIINMRRXXXXAAAAAAAAAAAA or IIII1MXXXXXXOOOOOOOOOOOO
+-- basic op codes												-- IIII0MRRXXXXAAAAAAAAAAAA or IIII1MXXXXXXOOOOOOOOOOOO
 -- Beware, certain bits are used to simpilfy decoding - dont change without knowing what you are doing...
   constant opr   : std_logic_vector (3 downto 0) := x"0";	-- operate
   constant jsr   : std_logic_vector (3 downto 0) := x"1";	-- jump to sub 
@@ -153,45 +155,56 @@ architecture Behavioral of D16w is
 
 -- immediate load type									-- 0INNNNh
  
-  constant lwi : std_logic_vector (3 downto 0) := x"1";  
+  constant lxwi : std_logic_vector (3 downto 0) := x"1";  
+  constant llwi : std_logic_vector (3 downto 0) := x"2";  
+  constant lhwi : std_logic_vector (3 downto 0) := x"3";  
   
 -- accumulator operate type							-- 0IXXXXh	
 
-  constant rotcl : std_logic_vector (3 downto 0) := x"4"; 	-- rotate through carry left
-  constant rotcr : std_logic_vector (3 downto 0) := x"5"; 	-- rotate through carry right
-  constant bswp  : std_logic_vector (3 downto 0) := x"6";	-- byte swap
-  constant sxb   : std_logic_vector (3 downto 0) := x"7";	-- sign extend byte
-  constant ldph  : std_logic_vector (3 downto 0) := x"8";	-- load product high part
+  constant rotcl : std_logic_vector (3 downto 0) := x"4";
+  constant rotcr : std_logic_vector (3 downto 0) := x"5";
+  constant wswp  : std_logic_vector (3 downto 0) := x"6";
+  constant sxw   : std_logic_vector (3 downto 0) := x"7";
   
-  constant ashr   : std_logic_vector (3 downto 0) := x"B";	-- arithmatic shift right
+  constant clrmac : std_logic_vector (3 downto 0) := x"8";
+  constant ldmacb : std_logic_vector (3 downto 0) := x"9";
+  constant ldmact : std_logic_vector (3 downto 0) := x"A";
+  constant ashr   : std_logic_vector (3 downto 0) := x"B";
+-- constant bitset?
+-- constant bitclr?  
+-- constant setbit
+-- constant	clrbit
   
 -- index register load/store in address order 	-- 8IXXXXh
-  constant ldx   : std_logic_vector (3 downto 0) := x"0";	-- load acc from X
-  constant ldy   : std_logic_vector (3 downto 0) := x"1";	-- load acc from Y	
-  constant ldz   : std_logic_vector (3 downto 0) := x"2";	-- load acc from Z
-  constant ldt   : std_logic_vector (3 downto 0) := x"3";	-- load acc from T
-  constant stx   : std_logic_vector (3 downto 0) := x"4";	-- store acc to X
-  constant sty   : std_logic_vector (3 downto 0) := x"5";	-- store acc to Y
-  constant stz   : std_logic_vector (3 downto 0) := x"6";	-- store acc to Z
-  constant stt   : std_logic_vector (3 downto 0) := x"7";	-- store acc to T
-  constant addix : std_logic_vector (3 downto 0) := x"8";	-- add immediate to X
-  constant addiy : std_logic_vector (3 downto 0) := x"9";	-- add immediate to Y
-  constant addiz : std_logic_vector (3 downto 0) := x"A";	-- add immediate to Z
-  constant addit : std_logic_vector (3 downto 0) := x"B";	-- add immediate to T
+  constant ldx   : std_logic_vector (3 downto 0) := x"0";
+  constant ldy   : std_logic_vector (3 downto 0) := x"1";
+  constant ldz   : std_logic_vector (3 downto 0) := x"2";
+  constant ldt   : std_logic_vector (3 downto 0) := x"3";
+  constant stx   : std_logic_vector (3 downto 0) := x"4";
+  constant sty   : std_logic_vector (3 downto 0) := x"5";
+  constant stz   : std_logic_vector (3 downto 0) := x"6";
+  constant stt   : std_logic_vector (3 downto 0) := x"7";
+  constant addix : std_logic_vector (3 downto 0) := x"8";
+  constant addiy : std_logic_vector (3 downto 0) := x"9";
+  constant addiz : std_logic_vector (3 downto 0) := x"A";
+  constant addit : std_logic_vector (3 downto 0) := x"B";
   
 -- return register save/restore						-- 8IXXXXh
-  constant pop   : std_logic_vector (3 downto 0) := x"C";	-- pop top of stack to accum
-  constant push  : std_logic_vector (3 downto 0) := x"D";	--	push accum on stack
-  constant ldsp  : std_logic_vector (3 downto 0) := x"E";	--	load acc from stack pointer
-  constant stsp  : std_logic_vector (3 downto 0) := x"F";	-- store acc to stack pointer
-  
--- basic signals
+  constant pop   : std_logic_vector (3 downto 0) := x"C";	
+  constant push  : std_logic_vector (3 downto 0) := x"D";
+  constant ldsp  : std_logic_vector (3 downto 0) := x"E";
+  constant stsp  : std_logic_vector (3 downto 0) := x"F";
 
+-- basic signals
   signal accumcar  : std_logic_vector (width downto 0);  -- accumulator+carry
   alias accum      : std_logic_vector (width-1 downto 0) is accumcar(width-1 downto 0);
   alias carrybit   : std_logic is accumcar(width);
   alias signbit    : std_logic is accumcar(width-1);
   signal maskedcarry : std_logic;
+  signal macc : std_logic_vector (macwidth-1 downto 0);  -- macccumulator
+  alias mmsb : std_logic is macc(macwidth-1);
+  alias mnmsbs : std_logic_vector(6 downto 0) is macc(macwidth-2 downto macwidth-8);
+  signal macnext : std_logic;
 
   signal pc        : std_logic_vector (paddwidth -1 downto 0); -- program counter - 12 bits = 4k
   signal mra       : std_logic_vector (maddwidth -1 downto 0);  -- memory read address - 12 bits = 4k
@@ -220,7 +233,7 @@ architecture Behavioral of D16w is
   alias opradd2    : std_logic_vector (maddwidth -1 downto 0) is id2 (maddwidth -1 downto 0);                 -- operand address at pipe2
   alias ind0       : std_logic is idbus(iwidth -5); 
   alias ind2       : std_logic is id2(iwidth -5); 
-  alias swap2      : std_logic is id2(iwidth -6);
+  alias domac      : std_logic is id2(iwidth -6); 
   alias ireg0      : std_logic_vector(1 downto 0) is idbus(iwidth -7 downto iwidth -8); 
   alias offset0    : std_logic_vector (maddwidth-1  downto 0) is idbus(maddwidth-1 downto 0);
   alias opropcode2 : std_logic_vector (3 downto 0) is id2 (iwidth-5 downto iwidth-8);    -- operate opcode at pipe2  alias iopr2      : std_logic_vector (7 downto 0) is id2 (7 downto 0);                 -- immediate operand at pipe2
@@ -232,18 +245,15 @@ architecture Behavioral of D16w is
   signal idt       : std_logic_vector (maddwidth -1 downto 0);
 
   signal idn0		 : std_logic_vector (maddwidth -1 downto 0);
-  signal idr       : std_logic_vector (paddwidth -1 downto 0);
-  signal idrt		 : std_logic_vector (paddwidth -1 downto 0);
   signal nextpc    : std_logic_vector (paddwidth -1 downto 0);
   signal pcplus1   : std_logic_vector (paddwidth -1 downto 0);
   signal acczero   : std_logic;
   signal maddpipe1 : std_logic_vector (maddwidth -1 downto 0);
   signal maddpipe2 : std_logic_vector (maddwidth -1 downto 0);
   signal maddpipe3 : std_logic_vector (maddwidth -1 downto 0);
-  signal product : std_logic_vector (width*2 -1 downto 0);
-  signal apatch : std_logic_vector (width -1 downto 0);
-  signal opatch : std_logic_vector (width -1 downto 0);
-  signal prodhigh: std_logic_vector (width -1 downto 0);
+  signal product : std_logic_vector (width -1 downto 0);
+  signal apatch : std_logic_vector (width/2 -1 downto 0);
+  signal opatch : std_logic_vector (width/2 -1 downto 0);
   signal spw: std_logic_vector (3 downto 0);
   signal spr: std_logic_vector (3 downto 0);	
   signal stackdin: std_logic_vector (width-1 downto 0);
@@ -251,7 +261,7 @@ architecture Behavioral of D16w is
   signal stackwe: std_logic;
   signal dopush: std_logic;
   signal dopop: std_logic;
-  
+ 
   function rotcleft(v : std_logic_vector ) return std_logic_vector is
     variable result   : std_logic_vector(width downto 0);
   begin
@@ -268,25 +278,25 @@ architecture Behavioral of D16w is
     return result;
   end rotcright;
 
-  function signextendbyte(v : std_logic_vector ) return std_logic_vector is
+  function signextendword(v : std_logic_vector ) return std_logic_vector is
     variable result         : std_logic_vector(width -1 downto 0);
   begin
-    if v(7) = '1' then
-      result(width-1 downto 8) := x"FF";
+    if v(15) = '1' then
+      result(width-1 downto 16) := x"FFFF";
     else
-      result(width-1 downto 8) := x"00";
+      result(width-1 downto 16) := x"0000";
     end if;
-    result(7 downto 0)         := v(7 downto 0);
+    result(15 downto 0)         := v(15 downto 0);
     return result;
-  end signextendbyte;
+  end signextendword;
   
-  function byteswap(v : std_logic_vector ) return std_logic_vector is
+  function wordswap(v : std_logic_vector ) return std_logic_vector is
     variable result   : std_logic_vector(width -1 downto 0);
   begin
-    result(width -1 downto 8) := v(7 downto 0);
-    result(7 downto 0)        := v(width-1 downto 8);
+    result(width -1 downto 16) := v(15 downto 0);
+    result(15 downto 0)        := v(width-1 downto 16);
     return result;
-  end byteswap;   
+  end wordswap;   
 
 begin  -- the CPU
 
@@ -304,10 +314,10 @@ begin  -- the CPU
 		doutb => stackdout,
 		wea	=> stackwe
 		);
-		
-  nextpcproc : process (clk, reset, pc, acczero, nextpc, id2, pcplus1,
-                        ind0, ind2,idr, idbus, opcode0, jumpq,
-                        opcode2, carrybit, accumcar,stackdout)  -- next pc calculation - jump decode
+
+  nextpcproc : process (clk, reset, pc, acczero, nextpc, 
+                        id2, ind0, ind2, idbus, opcode0,
+                        opcode2, carrybit, accumcar)  -- next pc calculation - jump decode
   begin
     jumpq <= (((SignBit xor SignXor2) and SignMask2) or
 				 ((CarryBit xor CarryXor2) and CarryMask2) or
@@ -339,6 +349,7 @@ begin  -- the CPU
 		wbena3 <= wbena2;									-- determines writeback suitable instructions
 		opcode3 <= opcode2;								-- for late decode of STA
 		if reset = '1' or ((opcode2 = jmpc) and (jumpq = '1')) then
+--		if reset = '1'  then
 			id1  <= (others => '0');                -- on reset or taken conditional jump
 			id2  <= (others => '0');					 -- fill inst pipeline with two 0s (nop)
       end if;
@@ -346,8 +357,8 @@ begin  -- the CPU
 	
   end process nextpcproc;
 
-  mraproc : process (idbus, idx, idy, idz, idt,
-                     ireg0, idn0, ind0, mra, 
+  mraproc : process (idbus, idx, idy, idz, idt, mra, ind0,
+                     ireg0,
                      offset0, opcode0, opradd0, clk)  -- memory read address generation
   begin
     mradd <= mra;
@@ -389,11 +400,10 @@ begin  -- the CPU
 		end if;
 	end process oprrproc;
 
-	accumproc : process (clk, accumcar, accum, id2, -- accumulator instruction decode - operate
-								oprr, idbus, pcplus1, spw)  
+	accumproc : process (clk, accumcar, accum, id2, oprr)  -- accumulator instruction decode - operate
 	begin
 		carryflg <= carrybit;
-		if accum = x"0000" then
+		if accum = x"00000000" then
 			acczero <= '1';
 		else
 			acczero <= '0';
@@ -406,33 +416,60 @@ begin  -- the CPU
 				when lor         	 	=> accum    <= accum or oprr;
 				when lxor         	=> accum    <= accum xor oprr;
 				when lda          	=> accum    <= oprr;		
-				when mul					=> accum <= product(15 downto 0);
-												prodhigh <= product(31 downto 16) -apatch;											
-				when muls				=> accum <= product(15 downto 0);
-												prodhigh <= product(31 downto 16) -apatch -opatch;											
+											if domac = '1' then 
+												macnext <= '1';
+											else
+												macnext <= '0';
+											end if;	
+				when mul					=> accum(15 downto 0) <= product(15 downto 0);
+											accum(31 downto 16)<= product(31 downto 16) -apatch;											
+											if domac = '1' then 
+												macnext <= '1';
+											else
+												macnext <= '0';
+											end if;								
+				when muls				=> accum(15 downto 0) <= product(15 downto 0);
+											accum(31 downto 16)<= product(31 downto 16) -apatch -opatch;											
+											if domac = '1' then 
+												macnext <= '1';
+											else
+												macnext <= '0';
+											end if;	
+
 				when opr					=>  												-- then operate
 					case opropcode2 is
-						when lwi	      => accum <= (iopr2);							-- load word immediate
+						when lxwi      => accum <= signextendword(iopr2);		-- load sign extended word immediate
+						when llwi      => accum(15 downto 0)  <= iopr2;			-- load low word immediate
+						when lhwi      => accum(31 downto 16) <= iopr2;			-- load high word immediate
 						when rotcl     => accumcar <= rotcleft(accumcar);		-- rotate left through carry
 						when rotcr     => accumcar <= rotcright(accumcar); 	-- rotate right through carry
 						when ashr      => accumcar(width-2 downto 0) <= accumcar(width-1 downto 1);    
-											   accumcar(width-1) <= accumcar(width-1);	-- shift right arithmetic 
-						when bswp      => accum <= byteswap(accum); 				-- byte swap
-						when sxb			=> accum <= signextendbyte(accum);		-- sign extend 8 bit value in low half
-						when ldph		=> accum <= prodhigh;						-- load product high
-
+											   accumcar(width-1) <= accumcar(width-1);		-- shift right arithmetic (fixed 7/24/12)
+						when wswp      => accum <= wordswap(accum); 				-- word swap
+						when sxw			=> accum <= signextendword(accum);		-- sign extend 16 bit value in low half
+						when clrmac		=> macc <= (others => '0');				-- clear the macc
+						when ldmacb		=>
+										if mmsb = '0' then							-- positive case
+											if mnmsbs = 0 then
+												accum <= macc(31 downto 0);		-- no overflow
+											else
+												accum <= x"7FFFFFFF";				-- if overflow bound to max positive
+											end if;
+										else												-- negative case
+											if mnmsbs = "1111111" then
+												accum <= macc(31 downto 0);		-- no overflow
+											else
+												accum <= x"80000000";				-- if overflow bound to max negative
+											end if;
+										end if;	
 						when others    => null;
 					end case;
 				when idxo				=> 												-- then index register	operate
 					case opropcode2 is
 						when ldx       => accum(maddwidth-1 downto 0) <= idx;
-												accum(width-1 downto maddwidth) <= (others => '0');
 						when ldy       => accum(maddwidth-1 downto 0) <= idy;
-												accum(width-1 downto maddwidth) <= (others => '0');
 						when ldz       => accum(maddwidth-1 downto 0) <= idz;
-												accum(width-1 downto maddwidth) <= (others => '0');
 						when ldt       => accum(maddwidth-1 downto 0) <= idt;
-												accum(width-1 downto maddwidth) <= (others => '0');
 		
 						when stx       => idx <= accum(maddwidth-1 downto 0);
 						when sty       => idy <= accum(maddwidth-1 downto 0);
@@ -442,11 +479,13 @@ begin  -- the CPU
 						when addix		=> idx <= maddpipe2;							-- re-use the offset adder
 						when addiy     => idy <= maddpipe2;							-- for add immediate to index
 						when addiz		=> idz <= maddpipe2;
-						when addit     => idt <= maddpipe2;					
+						when addit     => idt <= maddpipe2;
+
 						when pop			=> accum <= stackdout;
 						when stsp      => spw <= accum(3 downto 0);
 						when ldsp		=> accum(3 downto 0) <= spw;
 												accum(width-1 downto 4) <= (others => '0');
+					
 						when others    => null;
 					end case;
 				when others       => null;
@@ -454,12 +493,21 @@ begin  -- the CPU
 		
 			if Arith = "11" then
 				if Minus = '0' then
-					accumcar <= ('0'&accum) + ('0'&oprr) + (x"0000"&maskedcarry); -- add/addc
+					accumcar <= '0'&accum + oprr + maskedcarry; -- add/addc
 				else
-					accumcar <= ('0'&accum) - ('0'&oprr) - (x"0000"&maskedcarry); -- sub/subc
+					accumcar <= '0'&accum - oprr - maskedcarry; -- sub/subc
 				end if;
+				if domac = '1' then 
+					macnext <= '1';
+				else
+					macnext <= '0';
+				end if;	
 			end if;	
 
+			if macnext = '1' then
+				macc <= macc + accum;
+			end if;	
+		
 			if dopush = '1' then
 				spw <= spw +1; 
 			end if;
@@ -467,9 +515,8 @@ begin  -- the CPU
 			if dopop = '1' then
 				spw <= spw -1; 
 			end if;
-								
+					
 		end if;  -- clk
-		
 		
 		if opcode0 = jsr then
 			stackdin(paddwidth-1 downto 0) <= pcplus1;		--  a jsr (note jsr has priority)
@@ -491,18 +538,18 @@ begin  -- the CPU
 			dopop <= '1';	
 		else
 			dopop <= '0';	
-		end if;   
-		
+		end if;  
+
 		spr <= spw -1;		
 		
-		product <= accum * oprr;
+		product <= accum(15 downto 0) * oprr(15 downto 0);
 		if accum(15) = '1' then
-			apatch <= oprr;
+			apatch <= oprr(15 downto 0);
 		else
 			apatch <= (others =>'0');
 		end if;
 		if oprr(15) = '1' then
-			opatch <= accum;
+			opatch <= accum(15 downto 0);
 		else
 			opatch <= (others =>'0');
 		end if;

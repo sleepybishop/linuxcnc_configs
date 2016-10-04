@@ -71,6 +71,9 @@ use UNISIM.vcomponents.all;
 use work.decodedstrobe.all;	
 
 entity resolver is      
+	generic (
+			Clock : integer
+			);    
   port (
 		clk : in std_logic;
 		ibus : in std_logic_vector(31 downto 0);
@@ -169,12 +172,14 @@ signal ltestbit: std_logic;
 signal lsettestbit: std_logic;
 signal lclrtestbit: std_logic;
 
-constant UseSmallROM : boolean := false; -- need to promote to generic
+-- clock frequency read
+signal clockslv: std_logic_vector(31 downto 0);
+signal lreadclkfreq: std_logic;
 
 begin
 
  
-aproc: entity work.Big32v2 -- normally b32qcondmac2.vhd 
+aproc: entity work.Big32v2 -- normally b32qcondmac2ws.vhd 
 
 	port map (
 		clk      => clk,
@@ -188,32 +193,18 @@ aproc: entity work.Big32v2 -- normally b32qcondmac2.vhd
 		mwrite   => mwrite,		-- memory write signal        
 		mread		=> mread      -- memory read signal 				
 		);
-
-	SmallROM: if UseSmallROM generate
-		ResolverROM: entity work.resroms 
-		port map(
-			addra => hcommandreg(8 downto 0),		-- 512 (x24) till we run out of space
-			addrb => iabus(8 downto 0),
-			clk  => clk,
-			dina  => ibus(23 downto 0),
-			douta => romdata,
-			doutb => idbus,
-			wea	=> loadrom
-		);
-	end generate;
 	
-	NormalROM: if not UseSmallROM generate
-		ResolverROM: entity work.resrom 
-		port map(
-			addra => hcommandreg(9 downto 0),		-- 1k (x24) till we run out of space
-			addrb => iabus(9 downto 0),
-			clk  => clk,
-			dina  => ibus(23 downto 0),
-			douta => romdata,
-			doutb => idbus,
-			wea	=> loadrom
-		);
-	end generate;	 
+	ResolverROM: entity work.resrom 
+	port map(
+		addra => hcommandreg(9 downto 0),		-- 1k (x24) till we run out of space
+		addrb => iabus(9 downto 0),
+		clk  => clk,
+		dina  => ibus(23 downto 0),
+		douta => romdata,
+		doutb => idbus,
+		wea	=> loadrom
+	);
+	 
 
 	DataRam : entity work.dpram 
 	generic map (
@@ -335,6 +326,7 @@ aproc: entity work.Big32v2 -- normally b32qcondmac2.vhd
 	                         hreaddata, ldatareg, romdata, readvel, velramdata, lreadcommand, 
 									 hcommandreg, lreaddata, hdatareg, lstatusreg, hreadstatus, lreadccount, lcyclecount)
 	begin
+		clockslv <= conv_std_logic_vector(Clock,32);
 		-- first the writes
 		if rising_edge(clk) then
 			-- first host writes 
@@ -429,6 +421,10 @@ aproc: entity work.Big32v2 -- normally b32qcondmac2.vhd
 			iodata(7 downto 0) <= lcyclecount;
 			iodata(31 downto 8) <= (others => '0');
 		end if;
+		if lreadclkfreq = '1' then
+			iodata <= clockslv;
+		end if;
+		
 --		testbit <= ltestbit;
 	end process hostinterface;	
 
@@ -460,7 +456,8 @@ aproc: entity work.Big32v2 -- normally b32qcondmac2.vhd
 		lclrtestbit		 <= decodedstrobe(mwadd,x"40C",mwrite);
 		lloadintrate	 <= decodedstrobe(mwadd,x"40D",mwrite);
 		lloadstatus	    <= decodedstrobe(mwadd,x"40E",mwrite);
-
+		lreadclkfreq    <= decodedstrobe(ioradd,x"40F",mread);
+		
 		writedram       <= decodedstrobe(mwadd(11 downto 10),"00",mwrite);
 		lloadvel        <= decodedstrobe(mwadd(11 downto 3),"010000010",mwrite);-- 0x410 to 0x417
 

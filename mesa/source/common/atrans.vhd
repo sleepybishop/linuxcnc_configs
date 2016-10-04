@@ -1,5 +1,6 @@
+
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_1164.all;  			
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --
@@ -67,111 +68,56 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --     POSSIBILITY OF SUCH DAMAGE.
 -- 
 
-entity wordpr is
-    generic (
-	 		size : integer;
-			buswidth : integer
-			);
-	 port (		
-	   	clear: in STD_LOGIC;
-			clk: in STD_LOGIC;
-			ibus: in STD_LOGIC_VECTOR (buswidth-1 downto 0);
-			obus: out STD_LOGIC_VECTOR (buswidth-1 downto 0);
-			loadport: in STD_LOGIC;
-			loadddr: in STD_LOGIC;
-			loadaltdatasrc: in STD_LOGIC;
-			loadopendrainmode: in STD_LOGIC;
-			loadinvert: in STD_LOGIC;
-			readddr: in STD_LOGIC;
-			portdata: out STD_LOGIC_VECTOR (size-1 downto 0);
-			altdata: in STD_LOGIC_VECTOR (size-1 downto 0)
- 			);
-end wordpr;
+entity atrans is 
+	generic (
+				width : integer;
+				depth: integer );
+	port (
+ 		clk  : in std_logic; 
+		wea  : in std_logic; 
+		rea  : in std_logic; 
+		reb  : in std_logic; 		
+ 		adda : in std_logic_vector(depth-1 downto 0);
+		addb : in std_logic_vector(depth-1 downto 0);
+ 		din  : in std_logic_vector(width-1 downto 0);  
+ 		douta : out std_logic_vector(width-1 downto 0);
+		doutb: out std_logic_vector(width-1 downto 0)
+		);
+end atrans; 
+ 
+ architecture syn of atrans is 			
+ type ram_type is array (0 to 2**depth-1) of std_logic_vector(width-1 downto 0); 
+ signal RAM : ram_type; 
 
-architecture behavioral of wordpr is
 
-signal outreg: std_logic_vector (size-1 downto 0);
-signal ddrreg: std_logic_vector (size-1 downto 0):= (others => '0');
-signal tsoutreg: std_logic_vector (size-1 downto 0);
-signal opendrainsel: std_logic_vector (size-1 downto 0):= (others => '0');
-signal altdatasel: std_logic_vector (size-1 downto 0):= (others => '0');
-signal invertsel: std_logic_vector (size-1 downto 0):= (others => '0') ;
-signal tdata: std_logic_vector (size-1 downto 0);
-signal tddr: std_logic_vector (size-1 downto 0);
-
-begin
-	awordioport: process (
-								clk,
-								ibus,
-								loadport,
-								loadddr,
-								readddr,
-								outreg,
-								ddrreg,
-								altdatasel, 
-								invertsel, 
-								altdata, 
-								tdata,
-								tsoutreg,
-								opendrainsel)
-	begin
-		if rising_edge(clk) then
-			if loadport = '1'  then
-				outreg <= ibus(size-1 downto 0);
-			end if; 
-			if loadddr = '1' then
-				ddrreg <= ibus(size-1 downto 0);
-			end if;
-			if loadaltdatasrc = '1' then
-				altdatasel <= ibus(size-1 downto 0);
-			end if;
-			if loadopendrainmode = '1' then
-				opendrainsel <= ibus(size-1 downto 0);
-			end if;
-			if loadinvert = '1' then
-				invertsel <= ibus(size-1 downto 0);
-			end if;
-			if clear = '1' then 
-				ddrreg <= (others => '0'); 
-				opendrainsel <= (others => '0');	
-			end if;
-		end if; -- clk
-
-		for i in 0 to size-1 loop
-			if altdatasel(i) = '0' then
-				if invertsel(i) = '0' then			-- normal output data, normal outputs can be inverted
-					tdata(i) <= outreg(i);
-				else
-					tdata(i) <= not outreg(i);
-				end if;						
-			else
-				if invertsel(i) = '0' then			-- alternate output data, alternate outputs can be inverted
-					tdata(i) <= altdata(i);
-				else
-					tdata(i) <= not altdata(i);
-				end if;							
-			end if;
-			if opendrainsel(i) = '0' then				-- normal DDR	
-				if (ddrreg(i) = '1')  then 
-					tsoutreg(i) <= tdata(i);
-				else
-					tsoutreg(i) <= 'Z';
-				end if;
-			else	
-				if tdata(i) = '0' then 				-- open drain option = active pulldown
-					tsoutreg(i) <= '0';
-				else
-					tsoutreg(i) <= 'Z';
-				end if;
-			end if;
-		end loop;
-		
-		portdata <= tsoutreg;
-		obus <= (others => 'Z');
-		if readddr = '1' then
-			obus(size-1 downto 0) <= ddrreg;
-			obus(buswidth -1 downto size) <= (others => '0');
+ signal dadda : std_logic_vector(depth-1 downto 0);
+ signal daddb : std_logic_vector(depth-1 downto 0);
+ signal outa : std_logic_vector(width-1 downto 0); 
+ signal outb : std_logic_vector(width-1 downto 0); 
+ 
+ begin 
+ 	process (clk, RAM, rea, reb) 
+ 	begin 
+ 		if (clk'event and clk = '1') then  
+ 			if (wea = '1') then 
+ 				RAM(conv_integer(adda)) <= din; 
+ 			end if;  
+ 			dadda <= adda;
+			daddb <= addb;
+ 		end if; 
+ 		outa <= RAM(conv_integer(dadda)); 
+ 		outb <= RAM(conv_integer(daddb)); 
+		douta <= (others => 'Z');
+		if rea = '1' then
+			douta <= outa;
 		end if;
+		doutb <= (others => 'Z');
+		if reb = '1' then
+			doutb <= outb;
+		end if;
+		
+	end process; 
+ 
+end;
+ 
 
-	end process;
-end behavioral;

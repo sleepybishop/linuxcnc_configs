@@ -91,7 +91,7 @@ signal wdtimer: std_logic_vector (buswidth-1 downto 0) := '1' & otherz;
 signal wdtime: std_logic_vector (buswidth-1 downto 0); 
 alias  wdtimermsb: std_logic is  wdtimer(buswidth-1);
 signal wdstatus: std_logic := '0';
-signal oldwdtimermsb: std_logic := '0';
+signal oldwdtimermsb: std_logic := '1';
 
 begin
 	atimeout: process (clk,wdtimer,wdstatus,

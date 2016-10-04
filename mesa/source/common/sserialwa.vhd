@@ -153,6 +153,7 @@ signal loadromreq2: std_logic;
 
 
 -- UART interface signals (RX)
+signal loadrxfiltersel: std_logic;
 signal readrxdatasel: std_logic;
 signal loadrxbitratelsel: std_logic;
 signal loadrxbitratemsel: std_logic;
@@ -162,6 +163,7 @@ signal readrxfifocountsel: std_logic;
 signal readrxmodesel: std_logic;
 signal loadrxmodesel: std_logic;
 
+signal loadrxfilter: std_logic_vector(Ports-1 downto 0);
 signal readrxdata: std_logic_vector(Ports-1 downto 0);
 signal loadrxbitratel: std_logic_vector(Ports-1 downto 0);
 signal loadrxbitratem: std_logic_vector(Ports-1 downto 0);
@@ -425,7 +427,10 @@ begin
 	 
 		makeUARTRs: for i in 0 to Ports -1 generate
 		auarrx: entity work.uartr8	
-		port map (
+			generic map (
+				Clock => BaseClock
+			)
+			port map (
 			clk => clkmed,
 			ibus => mobus,
 			obus => iodata,
@@ -440,6 +445,7 @@ begin
 			readfifocount => readrxfifocount(i),
 			loadmode => loadrxmode(i),
 			readmode => readrxmode(i),
+			loadfilter => loadrxfilter(i),
 			fifohasdata => rxfifohasdata(i),
 			rxmask => drven(i),			-- for half duplex rx mask
 			rxdata => rxdata(i)
@@ -791,6 +797,7 @@ begin
 	
 		-- UART decodes
 		-- RX
+		loadrxfiltersel		<= decodedstrobe(mwadd(11 downto 4),x"27",mwrite);
 		readrxdatasel 			<= decodedstrobe(ioradd(11 downto 4),x"28",mread);
 		loadrxbitratelsel		<= decodedstrobe(mwadd(11 downto 4),x"29",mwrite);
 		loadrxbitratemsel		<= decodedstrobe(mwadd(11 downto 4),x"2A",mwrite);	
@@ -800,6 +807,7 @@ begin
 		readrxmodesel			<= decodedstrobe(ioradd(11 downto 4),x"2D",mread);
 		loadrxmodesel			<= decodedstrobe(mwadd(11 downto 4),x"2D",mwrite);
 
+		loadrxfilter <= OneOfNDecode(Ports,loadrxfiltersel,mwrite,mwadd(log2(Ports)-1 downto 0));
 		readrxdata <= OneOfNDecode(Ports,readrxdatasel,mread,ioradd(log2(Ports)-1 downto 0));
 		loadrxbitratel <= OneOfNDecode(Ports,loadrxbitratelsel,mwrite,mwadd(log2(Ports)-1 downto 0));
 		loadrxbitratem <= OneOfNDecode(Ports,loadrxbitratemsel,mwrite,mwadd(log2(Ports)-1 downto 0));

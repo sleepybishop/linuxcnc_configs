@@ -72,15 +72,16 @@ use UNISIM.vcomponents.all;
 -- dont change these:
 use work.IDROMConst.all;	
 use work.decodedstrobe.all;
+use work.FixICap.all;
 -------------------- option selection area ----------------------------
 
 
 -------------------- select one card type------------------------------
-use work.@CARD@.all;
+use work.@Card@.all;
 
 --use work.i90_x9card.all;   	-- needs 7i90.ucf and SP6 x9 144 pin
 -----------------------------------------------------------------------
-use work.@PIN@.all;
+use work.@Pin@.all;
 --72 pin pinouts for 7I90
 --use work.PIN_JUSTIO_72.all;
 --use work.PIN_SVST8_4IM2_72.all;
@@ -131,7 +132,6 @@ entity TopEPPSHostMot2 is -- for 7I90 in EPP mode
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;	-- PWM resolution is PWMRefWidth-1 bits 
 		IDROMType: integer := 3;		
-		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := true;
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -216,6 +216,22 @@ signal idata: std_logic_vector(7 downto 0);
 
 signal ReConfigreg : std_logic := '0';
 signal blinkcount : std_logic_vector(25 downto 0);
+-- ICap interface		
+
+signal ReadICapCookie : std_logic;
+signal ICapClock : std_logic;
+signal ICapTimer : std_logic_vector(5 downto 0) := "000000";
+
+signal ICapO : std_logic_vector(15 downto 0);
+signal ICapI : std_logic_vector(15 downto 0);
+
+signal ICapSel : std_logic;
+signal ICapClk : std_logic;
+signal ICapRW : std_logic;
+signal LoadICapClk : std_logic;
+signal LoadICapRW : std_logic;
+signal LoadICap : std_logic;
+signal ReadICap : std_logic;
 
 signal fclk : std_logic;
 signal clkfx0: std_logic;
@@ -235,7 +251,6 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
@@ -361,6 +376,22 @@ ahostmot2: entity work.HostMot2
    );
 
   -- End of DCM_inst instantiation
+
+  ICAP_SPARTAN6_inst : ICAP_SPARTAN6
+   generic map (
+      DEVICE_ID => X"2000093",     -- Specifies the pre-programmed Device ID value
+      SIM_CFG_FILE_NAME => "NONE"  -- Specifies the Raw Bitstream (RBT) file to be parsed by the simulation
+                                   -- model
+   )
+   port map (
+--    BUSY => BUSY, 			-- 1-bit output: Busy/Ready output
+--    O => ICapO,       		-- 16-bit output: Configuration data output bus
+      CE => '0',   				-- 1-bit input: Active-Low ICAP Enable input
+      CLK => ICapClock,   		-- 1-bit input: Clock input ~6 MHz max
+      I => ICapI,   				-- 16-bit input: Configuration data input bus
+      WRITE => '0'				-- 1-bit input: Read/Write control input 1= read 0= write
+   );
+  
 
 	EPPInterface: process(clk, waitpipe, alatch, afilter, dfilter,  
 								 EPP_READ, EPP_DSTROBE, EPP_ASTROBE,
@@ -655,6 +686,30 @@ ahostmot2: entity work.HostMot2
 		spics =>SPICS 
 	);
 
+	ICapDecode : process(seladd,DWrite32)
+	begin
+		LoadICap <= decodedstrobe(seladd(AddrWidth-1 downto 2)&"00",x"0078",DWrite32);
+		ReadICapCookie  <= decodedstrobe(seladd(AddrWidth-1 downto 2)&"00",x"0078",Read32);
+	end process ICAPDecode;
+
+	ICapSupport: process (clklow,LoadICap)
+	begin
+		if rising_edge(clklow) then
+			if LoadICap = '1' then
+				ICapI <= FixICap(wdlatch(15 downto 0));
+				ICapTimer <= "111111";				-- 16 counts = 160 ns strobe width at 100 MHz clcok low
+			end if;		
+			if ICapTimer /= "000000" then
+				ICapTimer <= ICapTimer -1;
+			end if;				
+			ICapClock <= ((not ICapTImer(5)) and ICapTimer(4));	-- 16 counts wide , 32 counts late 
+		end if;	
+		obus <= (others => 'Z');	
+		if ReadICAPCookie = '1' then
+			obus <= x"1CAB1CAB";
+		end if;	
+	end process ICapSupport;	
+	
 	dofallback: if fallback generate -- do blinky red light to indicate failure to load primary bitfile
 		Fallbackmode : process(clklow)
 		begin
