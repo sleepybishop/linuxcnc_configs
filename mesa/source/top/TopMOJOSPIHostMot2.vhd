@@ -219,6 +219,7 @@ signal clkfx1: std_logic;
 signal clk0_1: std_logic;
 
 signal RST  : std_logic;    -- reset signal
+signal R_LEDS : std_logic_vector(LEDCount -1 downto 0);
 
 -- signals for avr_interface
 signal channel        : std_logic_vector(3 downto 0);
@@ -248,6 +249,7 @@ signal last_sample9    : std_logic_vector(9 downto 0);
 begin
 
 RST <= NOT RST_N;
+LEDS <= NOT R_LEDS;
 
 avr_interface : entity work.avr_interface
 	port map (
@@ -320,7 +322,7 @@ ahostmot2: entity work.HostMot2
 		clkhigh =>  fclk,					-- PWM clock
 --		int => INT, 
 		iobits => IOBITS,			
-		leds => LEDS	
+		leds => R_LEDS	
 		);
 
 
