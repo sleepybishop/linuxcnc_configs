@@ -7,12 +7,12 @@
 buildarch=20
 
 pkgbase=linux-rt-raspberrypi
-_commit=2d31cd571e6f2ac61a3eda273d973058e1bb1f58
+_commit=c2a1d975537fcac01da80ce34f10bc491620a64e
 _aufs_commit=7d174ae40b4c9c876ee51aa50fa4ee1f3747de23
 _srcname=linux-${_commit}
 _kernelname=${pkgbase#linux}
 _desc="Raspberry Pi"
-pkgver=4.4.21
+pkgver=4.4.23
 pkgrel=1
 bfqver=v7r11
 arch=('armv6h' 'armv7h')
@@ -21,7 +21,7 @@ license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git')
 options=('!strip')
 source=("https://github.com/raspberrypi/linux/archive/${_commit}.tar.gz"
-	"https://www.kernel.org/pub/linux/kernel/projects/rt/4.4/patch-4.4.19-rt27.patch.gz"
+	"https://www.kernel.org/pub/linux/kernel/projects/rt/4.4/patch-4.4.21-rt31.patch.gz"
         "https://github.com/sfjro/aufs4-standalone/archive/${_aufs_commit}.tar.gz"
         "aufs_4_4_rt.patch"
         "bfq1.patch::ftp://teambelgium.net/bfq/patches/${pkgver%.*}.0-${bfqver}/0001-block-cgroups-kconfig-build-bits-for-BFQ-${bfqver}-${pkgver%.*}.0.patch"
@@ -33,8 +33,8 @@ source=("https://github.com/raspberrypi/linux/archive/${_commit}.tar.gz"
         'config.v6'
         'config.v7')
 
-md5sums=('f5735b8b2d98074c922ed5014d48edaa'
-         '8a71606a31c02cb4d05a5a2cdc908497'
+md5sums=('SKIP'
+         'SKIP'
          'a405d4c0f77374b1c357f815267dc573'
          'd6485df7ed531519c7b72d6beabe710d'
          'c1d7fcfe88edb658375089c0a9cc1811'
@@ -45,23 +45,23 @@ md5sums=('f5735b8b2d98074c922ed5014d48edaa'
          'f95eb9c22c18722e30fc28a5640aeba5'
          '60bc3624123c183305677097bcd56212'
          'a5e85ed9120c9dcb14844c6602836f23'
-         'b9e7e3f984c39efca50bc343a0a93c78')
+         'SKIP')
 
 prepare() {
   cd "${srcdir}/${_srcname}"
 
-  msg2 "AUFS patches"
-  (cd ${srcdir}/aufs4-standalone-${_aufs_commit}; patch -Np0 -i "${srcdir}/aufs_4_4_rt.patch")
+#  msg2 "AUFS patches"
+#  (cd ${srcdir}/aufs4-standalone-${_aufs_commit}; patch -Np0 -i "${srcdir}/aufs_4_4_rt.patch")
 
-  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/Documentation" .
-  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/fs" .
-  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/include/uapi/linux/aufs_type.h" ./include/linux
-  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/include/uapi/linux/aufs_type.h" ./include/uapi/linux
+#  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/Documentation" .
+#  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/fs" .
+#  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/include/uapi/linux/aufs_type.h" ./include/linux
+#  cp -ru "${srcdir}/aufs4-standalone-${_aufs_commit}/include/uapi/linux/aufs_type.h" ./include/uapi/linux
 
-  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-kbuild.patch"
-  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-base.patch"
-  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-mmap.patch"
-  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-standalone.patch"
+#  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-kbuild.patch"
+#  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-base.patch"
+#  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-mmap.patch"
+#  patch -Np1 -i "${srcdir}/aufs4-standalone-${_aufs_commit}/aufs4-standalone.patch"
 
   msg2 "Add BFQ patches"
   patch -Np1 -i "${srcdir}/bfq1.patch"
@@ -69,7 +69,7 @@ prepare() {
   patch -Np1 -i "${srcdir}/bfq3.patch"
 
   msg2 "Add RT patch"
-  patch -Np1 -i "${srcdir}/patch-4.4.19-rt27.patch"
+  patch -Np1 -i "${srcdir}/patch-4.4.21-rt31.patch"
 
   msg "Prepare to build"
   [[ $CARCH == "armv6h" ]] && cat "${srcdir}/config.v6" > ./.config

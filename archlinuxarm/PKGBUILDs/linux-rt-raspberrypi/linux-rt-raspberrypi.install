@@ -2,7 +2,7 @@
 # arg 2:  the old package version
 
 KERNEL_NAME=-rt-raspberrypi
-KERNEL_VERSION=4.4.21-1-rt27-ARCH
+KERNEL_VERSION=4.4.23-1-rt31-ARCH
 
 disable_cma() {
   if [[ -f /boot/config.txt && $(grep '^cma' /boot/config.txt) != '' ]]; then
