@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<interface>
+  <!-- interface-requires gladevcp 0.0 -->
+  <requires lib="gtk+" version="2.16" />
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkWindow" id="window1">
+    <property name="width_request">300</property>
+    <child>
+      <object class="GtkVBox" id="vbox1">
+        <property name="visible">True</property>
+        <child>
+          <object class="HAL_HBar" id="heater0-temp-fb">
+            <property name="visible">True</property>
+            <property name="force_height">36</property>
+            <property name="max">300</property>
+            <property name="z0_color">#0000ffff0000</property>
+            <property name="value">0.0</property>
+            <property name="z1_color">#ffffffff0000</property>
+            <property name="bg_color">#bebebebebebe</property>
+            <property name="text_template">Heater 0 Temp: %.2f C</property>
+            <property name="z0_border">1</property>
+            <property name="z2_color">#ffff00000000</property>
+            <property name="show_limits">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="HAL_HScale" id="heater0-temp-cmd">
+            <property name="visible">True</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">heater0_adjustment</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="hbox1">
+            <property name="visible">True</property>
+            <child>
+              <object class="HAL_CheckButton" id="heater0-enable">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label1">
+                <property name="visible">True</property>
+                <property name="ypad">5</property>
+                <property name="label">Heater 0 Enabled</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="HAL_Label"
+              id="heater0-output-clipped">
+                <property name="visible">True</property>
+                <property name="label_pin_type">1</property>
+                <property name="ypad">5</property>
+                <property name="text_template">( %.1f%% duty )</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkVBox" id="vbox2">
+            <property name="visible">True</property>
+            <child>
+              <object class="HAL_HBar" id="heater1-temp-fb">
+                <property name="visible">True</property>
+                <property name="force_height">36</property>
+                <property name="max">300</property>
+                <property name="z0_color">#0000ffff0000</property>
+                <property name="value">0.0</property>
+                <property name="z1_color">#ffffffff0000</property>
+                <property name="bg_color">#bebebebebebe</property>
+                <property name="text_template">Heater 1 Temp: %.2f C</property>
+                <property name="z0_border">1</property>
+                <property name="z2_color">#ffff00000000</property>
+                <property name="show_limits">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="HAL_HScale" id="heater1-temp-cmd">
+                <property name="visible">True</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="adjustment">heater1_adjustment</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="hbox2">
+                <property name="visible">True</property>
+                <child>
+                  <object class="HAL_CheckButton" id="heater1-enable">
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label2">
+                    <property name="visible">True</property>
+                    <property name="ypad">5</property>
+                    <property name="label">Heater 1 Enabled</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="HAL_Label"
+                  id="heater1-output-clipped">
+                    <property name="visible">True</property>
+                    <property name="label_pin_type">1</property>
+                    <property name="ypad">5</property>
+                    <property name="text_template">( %.1f%% duty )</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAdjustment" id="heater0_adjustment">
+    <property name="upper">300</property>
+    <property name="lower">1.7</property>
+    <property name="step_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="heater1_adjustment">
+    <property name="upper">100</property>
+    <property name="lower">1.7</property>
+    <property name="step_increment">1</property>
+  </object>
+</interface>

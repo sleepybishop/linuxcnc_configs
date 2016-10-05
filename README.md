@@ -10,7 +10,8 @@ linuxcnc configs and fpga firmware for machines in the lab
 
 [aluminum extrusion ultimaker extended](http://www.thingiverse.com/thing:1100186)
  * ultimaker_fdm - default 3d printing config
- * platform_sim - just simulation no HAL
+ * ultimaker_sim - just simulation no HAL
+ * jeffiebotbeta - 3d printer config using 6i25 + sain smart 5axis db25 breakout
 
 ## fpga firmware
 the firmware is a simplified version of the [mesa hostmot2 firmware](https://github.com/LinuxCNC/hostmot2-firmware) tailored to support only the hardware used.
