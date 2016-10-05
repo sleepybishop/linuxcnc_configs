@@ -71,6 +71,7 @@ net x-pos-fb        =>  pid.x.feedback
 
 # Step Gen signals/setup
 
+setp   [HOSTMOT2]BOARD.0.stepgen.00.dirsetup        [AXIS_0]DIRSETUP
 setp   [HOSTMOT2]BOARD.0.stepgen.00.dirhold         [AXIS_0]DIRHOLD
 setp   [HOSTMOT2]BOARD.0.stepgen.00.steplen         [AXIS_0]STEPLEN
 setp   [HOSTMOT2]BOARD.0.stepgen.00.stepspace       [AXIS_0]STEPSPACE
