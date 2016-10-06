@@ -299,7 +299,7 @@ package IDROMConst is
 	constant SSSIDataAddr0 : std_logic_vector(7 downto 0) := x"69";
 	constant SSSIDataAddr1 : std_logic_vector(7 downto 0) := x"6A";
 	constant SSSIControlAddr : std_logic_vector(7 downto 0) := x"6B";
-	constant	SSSIGlobalPStartAddr : std_logic_vector(7 downto 0) := x"6C";
+	constant SSSIGlobalPStartAddr : std_logic_vector(7 downto 0) := x"6C";
 	constant SSSINumRegs : std_logic_vector(7 downto 0) := x"04";
 	constant SSSIMPBitMask : std_logic_vector(31 downto 0) := x"00000003";
 
@@ -341,6 +341,8 @@ package IDROMConst is
 	constant TranslateRegionAddr : std_logic_vector(7 downto 0) := x"7C";
 	constant TranslateNumRegs : std_logic_vector(7 downto 0) := x"04";
 	constant TranslateMPBitMask : std_logic_vector(31 downto 0) := x"00000000";
+
+	constant AVRADCBaseAddr : std_logic_vector(7 downto 0) := x"88";
 
 	constant ClockLow20: integer :=  33333333;  		-- 5I20/4I65 low speed clock
 	constant ClockLow22: integer :=  48000000;		-- 5I22/5I23 low speed clock

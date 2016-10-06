@@ -250,6 +250,9 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 --- ID related signals
 	signal ReadID : std_logic;
 
+---	ADC related signals
+	signal ReadADC: std_logic;
+
 --- LED related signals
 	signal LoadLEDS : std_logic;
 
@@ -285,6 +288,16 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 			obus => obus
 			);
 
+
+	aavradc : entity work.avradc
+		generic map (
+			buswidth => BusWidth
+		)
+		port map (
+			readadc => ReadADC,
+			addr => A(7 downto 5),
+			obus => obus
+		);
 
 	makeoports: for i in 0 to IOPorts -1 generate
 		oportx: entity work.WordPR 
@@ -3559,6 +3572,7 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 		else
 			LoadIDROM <= '0';
 		end if;
+
 		if (A(15 downto 10) = IDROMAddr(7 downto 2)) and readstb = '1' then	 --  
 			ReadIDROM <= '1';
 		else
@@ -3599,6 +3613,12 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 			ReadID <= '1';
 		else
 			ReadID <= '0';
+		end if;
+
+		if A(15 downto 8) = AVRADCBaseAddr and readstb = '1' then --
+			ReadADC <= '1';
+		else
+			ReadADC <= '0';
 		end if;
 
 		if A(15 downto 8) = WatchdogTimeAddr and readstb = '1' then	 --  
