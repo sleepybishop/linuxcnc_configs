@@ -90,13 +90,13 @@ begin
 		if readadc = '1' then
 			case addr is
 				when "000" => obus <= x"deadbeef";
-				when "001" => obus <= x"20202020";
-				when "010" => obus <= x"40404040";
-				when "011" => obus <= x"60606060";
-				when "100" => obus <= x"80808080";
-				when "101" => obus <= x"a0a0a0a0";
-				when "110" => obus <= x"c0c0c0c0";
-				when "111" => obus <= x"e0e0e0e0";
+				when "001" => obus <= x"04040404";
+				when "010" => obus <= x"08080808";
+				when "011" => obus <= x"0c0c0c0c";
+				when "100" => obus <= x"10101010";
+				when "101" => obus <= x"14141414";
+				when "110" => obus <= x"18181818";
+				when "111" => obus <= x"1c1c1c1c";
 				when others => null;
 			end case;
 		end if;

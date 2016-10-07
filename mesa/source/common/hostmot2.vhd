@@ -295,7 +295,7 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 		)
 		port map (
 			readadc => ReadADC,
-			addr => A(7 downto 5),
+			addr => A(4 downto 2),
 			obus => obus
 		);
 
