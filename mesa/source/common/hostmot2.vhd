@@ -3615,7 +3615,7 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 			ReadID <= '0';
 		end if;
 
-		if A(15 downto 8) = AVRADCBaseAddr and readstb = '1' then --
+		if A(15 downto 8) = AVRAddr and readstb = '1' then --
 			ReadADC <= '1';
 		else
 			ReadADC <= '0';

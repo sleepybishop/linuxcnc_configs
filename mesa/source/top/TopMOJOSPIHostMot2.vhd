@@ -237,14 +237,7 @@ signal uart_data    : std_logic_vector(7 downto 0); -- data buffer for UART (hol
 signal data_to_send   : std_logic;          -- indicates data to send in uart_data
 
 -- signals for storing most recent sample from each adc
-signal last_sample0    : std_logic_vector(9 downto 0);
-signal last_sample1    : std_logic_vector(9 downto 0);
-signal last_sample4    : std_logic_vector(9 downto 0);
-signal last_sample5    : std_logic_vector(9 downto 0);
-signal last_sample6    : std_logic_vector(9 downto 0);
-signal last_sample7    : std_logic_vector(9 downto 0);
-signal last_sample8    : std_logic_vector(9 downto 0);
-signal last_sample9    : std_logic_vector(9 downto 0);
+signal adcsamples      : AdcStorage(ADCCount -1 downto 0);
 
 begin
 
@@ -614,28 +607,28 @@ ahostmot2: entity work.HostMot2
 				case sample_channel is
 					when "0000" => 
 						channel <= "0001";
-						last_sample0 <= sample;
+						adcsamples(0) <= sample;
 					when "0001" =>
 						channel <= "0100";
-						last_sample1 <= sample;
+						adcsamples(1) <= sample;
 					when "0100" =>
 						channel <= "0101";
-						last_sample4 <= sample;
+						adcsamples(2) <= sample;
 					when "0101" =>
 						channel <= "0110";
-						last_sample5 <= sample;
+						adcsamples(3) <= sample;
 					when "0110" =>
 						channel <= "0111";
-						last_sample6 <= sample;
+						adcsamples(4) <= sample;
 					when "0111" =>
 						channel <= "1000";
-						last_sample7 <= sample;
+						adcsamples(5) <= sample;
 					when "1000" =>
 						channel <= "1001";
-						last_sample8 <= sample;
+						adcsamples(6) <= sample;
 					when "1001" =>
 						channel <= "0000";
-						last_sample9 <= sample;
+						adcsamples(7) <= sample;
 					when others => null;
 				end case;
 			end if;

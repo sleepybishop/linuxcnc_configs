@@ -342,7 +342,9 @@ package IDROMConst is
 	constant TranslateNumRegs : std_logic_vector(7 downto 0) := x"04";
 	constant TranslateMPBitMask : std_logic_vector(31 downto 0) := x"00000000";
 
-	constant AVRADCBaseAddr : std_logic_vector(7 downto 0) := x"88";
+	constant AVRAddr : std_logic_vector(7 downto 0) := x"88";
+	constant AVRNumRegs : std_logic_vector(7 downto 0) := x"08";
+	constant AVRMPBitMask : std_logic_vector(31 downto 0) := x"00000000";
 
 	constant ClockLow20: integer :=  33333333;  		-- 5I20/4I65 low speed clock
 	constant ClockLow22: integer :=  48000000;		-- 5I22/5I23 low speed clock
@@ -805,6 +807,7 @@ package IDROMConst is
 
 
 	constant LEDTag : std_logic_vector(7 downto 0) := x"80";
+	constant AVRTag : std_logic_vector(7 downto 0) := x"1B";
 
 	constant GlobalChan: std_logic_vector(7 downto 0) := x"80";	
 	
@@ -827,7 +830,9 @@ package IDROMConst is
 	end record;
 	
 	type PinDescType is array(0 to MaxPins -1) of std_logic_vector(31 downto 0);
-	
+
+	type AdcStorage is array (natural range <>) of std_logic_vector(9 downto 0);
+
 	type ModuleRecord is 							-- probably need an alternate way for smart modules
 	record	
 		GTag : std_logic_vector(7 downto 0);		
