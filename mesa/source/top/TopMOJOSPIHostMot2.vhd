@@ -237,7 +237,7 @@ signal uart_data    : std_logic_vector(7 downto 0); -- data buffer for UART (hol
 signal data_to_send   : std_logic;          -- indicates data to send in uart_data
 
 -- signals for storing most recent sample from each adc
-signal adcsamples      : AdcStorage(ADCCount -1 downto 0);
+signal adcsamples      : AdcStorage(7 downto 0);
 
 begin
 
