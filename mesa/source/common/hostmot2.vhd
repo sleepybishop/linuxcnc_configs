@@ -135,6 +135,7 @@ entity HostMot2 is
 	liobits: inout std_logic_vector (liowidth -1 downto 0);
 	rates: out std_logic_vector (4 downto 0);
 	leds: out std_logic_vector(ledcount-1 downto 0);
+	adcdata: varray10bit(7 downto 0);
 	wdlatchedbite: out std_logic
 	);
 end HostMot2;
@@ -185,6 +186,7 @@ constant BinOscs: integer := NumberOfModules(TheModuleID,BinOscTag);
 constant BinOscWidth: integer := MaxOutputPinsPerModule(ThePinDesc,BinOscTag);
 constant HM2DPLLs: integer := NumberOfModules(TheModuleID,HM2DPLLTag);
 constant ScalerCounters: integer := NumberOfModules(TheModuleID,ScalerCounterTag);
+constant AVRs: integer := NumberOfModules(TheModuleID,AVRTag);
 
 -- extract the needed Stepgen table width from the max pin# used with a stepgen tag
 constant StepGenTableWidth: integer := MaxPinsPerModule(ThePinDesc,StepGenTag);
@@ -288,16 +290,18 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 			obus => obus
 			);
 
-
-	aavradc : entity work.avradc
-		generic map (
-			buswidth => BusWidth
-		)
-		port map (
-			readadc => ReadADC,
-			addr => A(4 downto 2),
-			obus => obus
-		);
+	makeavrs: for i in 0 to AVRs -1 generate
+		aavr : entity work.avr
+			generic map (
+				buswidth => BusWidth
+			)
+			port map (
+				readadc => ReadADC,
+				addr => A(4 downto 2),
+				obus => obus,
+				adcdata => adcdata
+			);
+		end generate;
 
 	makeoports: for i in 0 to IOPorts -1 generate
 		oportx: entity work.WordPR 

@@ -831,8 +831,6 @@ package IDROMConst is
 	
 	type PinDescType is array(0 to MaxPins -1) of std_logic_vector(31 downto 0);
 
-	type AdcStorage is array (natural range <>) of std_logic_vector(9 downto 0);
-
 	type ModuleRecord is 							-- probably need an alternate way for smart modules
 	record	
 		GTag : std_logic_vector(7 downto 0);		
@@ -848,6 +846,7 @@ package IDROMConst is
 
 	type ModuleIDType is array(0 to MaxModules-1) of ModuleRecord;
 
+	type varray10bit is array (natural range<>) of std_logic_vector(9 downto 0);
 
 end package IDROMConst;
 

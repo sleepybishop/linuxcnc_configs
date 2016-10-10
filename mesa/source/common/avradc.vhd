@@ -3,10 +3,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
---
--- Copyright (C) 2007, Peter C. Wallace, Mesa Electronics
--- http://www.mesanet.com
---
 -- This program is is licensed under a disjunctive dual license giving you
 -- the choice of one of the two following sets of free software/open source
 -- licensing terms:
@@ -68,35 +64,36 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --     POSSIBILITY OF SUCH DAMAGE.
 -- 
 
+use work.IDROMConst.all;
 
-entity avradc is
+entity avr is
 	generic (
 		buswidth : integer
 	);
 	port ( 
+	  adcdata: varray10bit(7 downto 0);
 		readadc : in  std_logic;
 		addr : in  std_logic_vector(3 downto 1);
 		obus : out  std_logic_vector (buswidth-1 downto 0)
 	);
-end avradc;
+end avr;
 
-architecture Behavioral of avradc is
+architecture Behavioral of avr is
 
 begin
-
-	avradcproc: process (readadc,addr)
+	avrproc: process (readadc,addr)
 	begin
 		obus <= ( others => 'Z');
 		if readadc = '1' then
 			case addr is
-				when "000" => obus <= x"deadbeef";
-				when "001" => obus <= x"04040404";
-				when "010" => obus <= x"08080808";
-				when "011" => obus <= x"0c0c0c0c";
-				when "100" => obus <= x"10101010";
-				when "101" => obus <= x"14141414";
-				when "110" => obus <= x"18181818";
-				when "111" => obus <= x"1c1c1c1c";
+				when "000" => obus <= x"0000"&"000000"&adcdata(0);
+				when "001" => obus <= x"0000"&"000000"&adcdata(1);
+				when "010" => obus <= x"0000"&"000000"&adcdata(2);
+				when "011" => obus <= x"0000"&"000000"&adcdata(3);
+				when "100" => obus <= x"0000"&"000000"&adcdata(4);
+				when "101" => obus <= x"0000"&"000000"&adcdata(5);
+				when "110" => obus <= x"0000"&"000000"&adcdata(6);
+				when "111" => obus <= x"0000"&"000000"&adcdata(7);
 				when others => null;
 			end case;
 		end if;
