@@ -398,6 +398,8 @@ signal clkmed : std_logic;
 signal clkfx1: std_logic;
 signal clk1: std_logic;
 
+signal AdcSamples      : varray10bit(7 downto 0);
+
 begin
 
   ClockMult0 : DCM						-- This takes 100 MHz clkmed an multiplies it to ClockHigh  
@@ -532,6 +534,7 @@ ahostmot2: entity work.HostMot2
 		clkhigh =>  fclk,				-- High speed clock
 		int => LINT, 
 		iobits => IOBITS,		
+		adcdata => AdcSamples,
 		leds => LEDS,	
       wdlatchedbite => WDLBite 
 		);

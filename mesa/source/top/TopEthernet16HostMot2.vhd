@@ -52,7 +52,7 @@ use UNISIM.VComponents.all;
 --         * Neither the name of Mesa Electronics nor the names of its
 --           contributors may be used to endorse or promote products
 --           derived from this software without specific prior written
---           permission.c1
+--           permission.
 -- 
 -- 
 -- Disclaimer:
@@ -399,6 +399,7 @@ signal clk1fx : std_logic;
 signal clk1 : std_logic;
 signal hm2fastclock : std_logic;
 
+signal AdcSamples      : varray10bit(7 downto 0);
 
 begin
 
@@ -445,6 +446,7 @@ ahostmot2: entity work.HostMot2
 --		int => INT, 
 		iobits => IOBITS,			
 		rates => Rates,
+		adcdata => AdcSamples,
 		leds => HM2LEDS,	
       wdlatchedbite => WDLBite 
 		);

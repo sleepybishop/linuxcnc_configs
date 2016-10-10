@@ -249,6 +249,7 @@ signal clklow : std_logic;
 signal clkfx1: std_logic;
 signal clk0_1: std_logic;
 
+signal AdcSamples      : varray10bit(7 downto 0);
 
 begin
 
@@ -293,6 +294,7 @@ ahostmot2: entity work.HostMot2
 		clkhigh =>  fclk,					-- PWM clock
 --		int => INT, 
 		iobits => IOBITS,			
+		adcdata => AdcSamples,
 		leds => LEDS	
 		);
 
