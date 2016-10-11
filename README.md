@@ -24,9 +24,9 @@ the firmware is a simplified version of the [mesa hostmot2 firmware](https://git
 
 | LINE  | RPI PIN | MOJO PIN |
 | ----- | ------- | -------- |
-| MOSI  | P1-19   | P41      |
-| MISO  | P1-21   | P40      |
-| CLK   | P1-23   | P50      |
-| CE0   | P1-24   | P51      |
+| MOSI  | P1-19   | P17      |
+| MISO  | P1-21   | P15      |
+| CLK   | P1-23   | P24      |
+| CE0   | P1-24   | P22      |
 
 
