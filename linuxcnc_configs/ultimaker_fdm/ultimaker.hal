@@ -77,7 +77,7 @@ net x-pos-fb        =>  pid.x.feedback
 
 # Step Gen signals/setup
 
-setp   hm2_6i25.0.stepgen.00.dirsetup        [AXIS_0]DIRSETUP
+setp   hm2_6i25.0.stepgen.05.dirsetup        [AXIS_0]DIRSETUP
 setp   hm2_6i25.0.stepgen.05.dirhold         [AXIS_0]DIRHOLD
 setp   hm2_6i25.0.stepgen.05.steplen         [AXIS_0]STEPLEN
 setp   hm2_6i25.0.stepgen.05.stepspace       [AXIS_0]STEPSPACE
