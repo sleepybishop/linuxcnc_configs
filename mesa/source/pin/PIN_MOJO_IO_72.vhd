@@ -69,12 +69,12 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 use work.IDROMConst.all;
 
-package PIN_MOJOIO_72 is
+package PIN_MOJO_IO_72 is
 	constant ModuleID : ModuleIDType :=( 
 		(WatchDogTag,			x"00",	ClockLowTag,	x"01",	WatchDogTimeAddr&PadT,		WatchDogNumRegs,		x"00",	WatchDogMPBitMask),
 		(IOPortTag,				x"00",	ClockLowTag,	x"03",	PortAddr&PadT,					IOPortNumRegs,			x"00",	IOPortMPBitMask),
 		(LEDTag,					x"00",	ClockLowTag,	x"08",	LEDAddr&PadT,					LEDNumRegs,				x"00",	LEDMPBitMask),
-		(NullTag,				x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
+		(AVRTag,				x"00",	ClockLowTag,			x"01",	AVRAddr&PadT,				AVRNumRegs,					x"00", AVRMPBitMask),
 		(NullTag,				x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
 		(NullTag,				x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
 		(NullTag,				x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
@@ -193,4 +193,4 @@ package PIN_MOJOIO_72 is
 		emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,
 		emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin);
 
-end package PIN_MOJOIO_72;
+end package PIN_MOJO_IO_72;
