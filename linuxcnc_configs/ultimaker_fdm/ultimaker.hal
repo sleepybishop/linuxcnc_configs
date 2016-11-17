@@ -1,27 +1,27 @@
 loadrt trivkins
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 loadrt hostmot2
-loadrt hm2_pci 
+loadrt hm2_7i90  config="num_stepgens=5 num_pwmgens=3"
 
 loadrt max31855 count=1 personality=2
 
 loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.h0,pid.h1
 loadrt limit1 names=limit1.h0,limit1.h1
 
-setp hm2_6i25.0.gpio.025.is_output  true
-setp hm2_6i25.0.gpio.026.is_output  true
+setp hm2_7i90.0.gpio.026.is_output  true
+setp hm2_7i90.0.gpio.027.is_output  true
 
-net spi_clk hm2_6i25.0.gpio.025.out     max31855.0.clk.out
-net spi_cs  hm2_6i25.0.gpio.026.out     max31855.0.cs.out
-net spi_d0  hm2_6i25.0.gpio.033.in_not  max31855.0.data.0.in
-net spi_d1  hm2_6i25.0.gpio.032.in_not  max31855.0.data.1.in
+net spi_clk hm2_7i90.0.gpio.027.out     max31855.0.clk.out
+net spi_cs  hm2_7i90.0.gpio.026.out     max31855.0.cs.out
+net spi_d0  hm2_7i90.0.gpio.025.in      max31855.0.data.0.in
+net spi_d1  hm2_7i90.0.gpio.024.in      max31855.0.data.1.in
 
-setp    hm2_6i25.0.pwmgen.pwm_frequency 20000
-setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
-setp    hm2_6i25.0.watchdog.timeout_ns 5000000
+setp    hm2_7i90.0.pwmgen.pwm_frequency 200
+setp    hm2_7i90.0.pwmgen.pdm_frequency 5000
+setp    hm2_7i90.0.watchdog.timeout_ns 5000000
 
-addf hm2_6i25.0.read          servo-thread
-addf hm2_6i25.0.write         servo-thread
+addf hm2_7i90.0.read          servo-thread
+addf hm2_7i90.0.write         servo-thread
 addf motion-command-handler   servo-thread
 addf motion-controller        servo-thread
 addf pid.x.do-pid-calcs       servo-thread
@@ -34,6 +34,7 @@ addf limit1.h0                servo-thread
 addf limit1.h1                servo-thread
 addf max31855.0.bitbang-spi   servo-thread
 
+
 # external output signals
 
 # external input signals
@@ -41,16 +42,16 @@ addf max31855.0.bitbang-spi   servo-thread
 # --- ABORT ---
 
 # --- HOME-A ---
-net home-a     <=  hm2_6i25.0.gpio.013.in
+net home-a     <=  hm2_7i90.0.gpio.013.in
 
 # --- HOME-X ---
-net home-x     <=  hm2_6i25.0.gpio.014.in
+net home-x     <=  hm2_7i90.0.gpio.014.in
 
 # --- HOME-Y ---
-net home-y     <=  hm2_6i25.0.gpio.015.in
+net home-y     <=  hm2_7i90.0.gpio.015.in
 
 # --- HOME-Z ---
-net home-z     <=  hm2_6i25.0.gpio.016.in
+net home-z     <=  hm2_7i90.0.gpio.016.in
 
 #*******************
 #  AXIS X
@@ -77,25 +78,25 @@ net x-pos-fb        =>  pid.x.feedback
 
 # Step Gen signals/setup
 
-setp   hm2_6i25.0.stepgen.05.dirsetup        [AXIS_0]DIRSETUP
-setp   hm2_6i25.0.stepgen.05.dirhold         [AXIS_0]DIRHOLD
-setp   hm2_6i25.0.stepgen.05.steplen         [AXIS_0]STEPLEN
-setp   hm2_6i25.0.stepgen.05.stepspace       [AXIS_0]STEPSPACE
-setp   hm2_6i25.0.stepgen.05.position-scale  [AXIS_0]STEP_SCALE
-setp   hm2_6i25.0.stepgen.05.step_type        0
-setp   hm2_6i25.0.stepgen.05.control-type     1
-setp   hm2_6i25.0.stepgen.05.maxaccel         [AXIS_0]STEPGEN_MAXACCEL
-setp   hm2_6i25.0.stepgen.05.maxvel           [AXIS_0]STEPGEN_MAXVEL
+setp   hm2_7i90.0.stepgen.00.dirsetup        [AXIS_0]DIRSETUP
+setp   hm2_7i90.0.stepgen.00.dirhold         [AXIS_0]DIRHOLD
+setp   hm2_7i90.0.stepgen.00.steplen         [AXIS_0]STEPLEN
+setp   hm2_7i90.0.stepgen.00.stepspace       [AXIS_0]STEPSPACE
+setp   hm2_7i90.0.stepgen.00.position-scale  [AXIS_0]STEP_SCALE
+setp   hm2_7i90.0.stepgen.00.step_type        0
+setp   hm2_7i90.0.stepgen.00.control-type     1
+setp   hm2_7i90.0.stepgen.00.maxaccel         [AXIS_0]STEPGEN_MAXACCEL
+setp   hm2_7i90.0.stepgen.00.maxvel           [AXIS_0]STEPGEN_MAXVEL
 
 # ---closedloop stepper signals---
 
 net x-pos-cmd    <= axis.0.motor-pos-cmd
 net x-vel-cmd    <= axis.0.joint-vel-cmd
-net x-output     <= hm2_6i25.0.stepgen.05.velocity-cmd
-net x-pos-fb     <= hm2_6i25.0.stepgen.05.position-fb
+net x-output     <= hm2_7i90.0.stepgen.00.velocity-cmd
+net x-pos-fb     <= hm2_7i90.0.stepgen.00.position-fb
 net x-pos-fb     => axis.0.motor-pos-fb
 net x-enable     <= axis.0.amp-enable-out
-net x-enable     => hm2_6i25.0.stepgen.05.enable
+net x-enable     => hm2_7i90.0.stepgen.00.enable
 
 # ---setup home / limit switch signals---
 
@@ -128,25 +129,25 @@ net y-pos-fb        =>  pid.y.feedback
 
 # Step Gen signals/setup
 
-setp   hm2_6i25.0.stepgen.06.dirsetup        [AXIS_1]DIRSETUP
-setp   hm2_6i25.0.stepgen.06.dirhold         [AXIS_1]DIRHOLD
-setp   hm2_6i25.0.stepgen.06.steplen         [AXIS_1]STEPLEN
-setp   hm2_6i25.0.stepgen.06.stepspace       [AXIS_1]STEPSPACE
-setp   hm2_6i25.0.stepgen.06.position-scale  [AXIS_1]STEP_SCALE
-setp   hm2_6i25.0.stepgen.06.step_type        0
-setp   hm2_6i25.0.stepgen.06.control-type     1
-setp   hm2_6i25.0.stepgen.06.maxaccel         [AXIS_1]STEPGEN_MAXACCEL
-setp   hm2_6i25.0.stepgen.06.maxvel           [AXIS_1]STEPGEN_MAXVEL
+setp   hm2_7i90.0.stepgen.01.dirsetup        [AXIS_1]DIRSETUP
+setp   hm2_7i90.0.stepgen.01.dirhold         [AXIS_1]DIRHOLD
+setp   hm2_7i90.0.stepgen.01.steplen         [AXIS_1]STEPLEN
+setp   hm2_7i90.0.stepgen.01.stepspace       [AXIS_1]STEPSPACE
+setp   hm2_7i90.0.stepgen.01.position-scale  [AXIS_1]STEP_SCALE
+setp   hm2_7i90.0.stepgen.01.step_type        0
+setp   hm2_7i90.0.stepgen.01.control-type     1
+setp   hm2_7i90.0.stepgen.01.maxaccel         [AXIS_1]STEPGEN_MAXACCEL
+setp   hm2_7i90.0.stepgen.01.maxvel           [AXIS_1]STEPGEN_MAXVEL
 
 # ---closedloop stepper signals---
 
 net y-pos-cmd    <= axis.1.motor-pos-cmd
 net y-vel-cmd    <= axis.1.joint-vel-cmd
-net y-output     <= hm2_6i25.0.stepgen.06.velocity-cmd
-net y-pos-fb     <= hm2_6i25.0.stepgen.06.position-fb
+net y-output     <= hm2_7i90.0.stepgen.01.velocity-cmd
+net y-pos-fb     <= hm2_7i90.0.stepgen.01.position-fb
 net y-pos-fb     => axis.1.motor-pos-fb
 net y-enable     <= axis.1.amp-enable-out
-net y-enable     => hm2_6i25.0.stepgen.06.enable
+net y-enable     => hm2_7i90.0.stepgen.01.enable
 
 # ---setup home / limit switch signals---
 
@@ -179,25 +180,25 @@ net z-pos-fb        =>  pid.z.feedback
 
 # Step Gen signals/setup
 
-setp   hm2_6i25.0.stepgen.07.dirsetup        [AXIS_2]DIRSETUP
-setp   hm2_6i25.0.stepgen.07.dirhold         [AXIS_2]DIRHOLD
-setp   hm2_6i25.0.stepgen.07.steplen         [AXIS_2]STEPLEN
-setp   hm2_6i25.0.stepgen.07.stepspace       [AXIS_2]STEPSPACE
-setp   hm2_6i25.0.stepgen.07.position-scale  [AXIS_2]STEP_SCALE
-setp   hm2_6i25.0.stepgen.07.step_type        0
-setp   hm2_6i25.0.stepgen.07.control-type     1
-setp   hm2_6i25.0.stepgen.07.maxaccel         [AXIS_2]STEPGEN_MAXACCEL
-setp   hm2_6i25.0.stepgen.07.maxvel           [AXIS_2]STEPGEN_MAXVEL
+setp   hm2_7i90.0.stepgen.02.dirsetup        [AXIS_2]DIRSETUP
+setp   hm2_7i90.0.stepgen.02.dirhold         [AXIS_2]DIRHOLD
+setp   hm2_7i90.0.stepgen.02.steplen         [AXIS_2]STEPLEN
+setp   hm2_7i90.0.stepgen.02.stepspace       [AXIS_2]STEPSPACE
+setp   hm2_7i90.0.stepgen.02.position-scale  [AXIS_2]STEP_SCALE
+setp   hm2_7i90.0.stepgen.02.step_type        0
+setp   hm2_7i90.0.stepgen.02.control-type     1
+setp   hm2_7i90.0.stepgen.02.maxaccel         [AXIS_2]STEPGEN_MAXACCEL
+setp   hm2_7i90.0.stepgen.02.maxvel           [AXIS_2]STEPGEN_MAXVEL
 
 # ---closedloop stepper signals---
 
 net z-pos-cmd    <= axis.2.motor-pos-cmd
 net z-vel-cmd    <= axis.2.joint-vel-cmd
-net z-output     <= hm2_6i25.0.stepgen.07.velocity-cmd
-net z-pos-fb     <= hm2_6i25.0.stepgen.07.position-fb
+net z-output     <= hm2_7i90.0.stepgen.02.velocity-cmd
+net z-pos-fb     <= hm2_7i90.0.stepgen.02.position-fb
 net z-pos-fb     => axis.2.motor-pos-fb
 net z-enable     <= axis.2.amp-enable-out
-net z-enable     => hm2_6i25.0.stepgen.07.enable
+net z-enable     => hm2_7i90.0.stepgen.02.enable
 
 # ---setup home / limit switch signals---
 
@@ -230,25 +231,25 @@ net a-pos-fb        =>  pid.a.feedback
 
 # Step Gen signals/setup
 
-setp   hm2_6i25.0.stepgen.08.dirsetup        [AXIS_3]DIRSETUP
-setp   hm2_6i25.0.stepgen.08.dirhold         [AXIS_3]DIRHOLD
-setp   hm2_6i25.0.stepgen.08.steplen         [AXIS_3]STEPLEN
-setp   hm2_6i25.0.stepgen.08.stepspace       [AXIS_3]STEPSPACE
-setp   hm2_6i25.0.stepgen.08.position-scale  [AXIS_3]STEP_SCALE
-setp   hm2_6i25.0.stepgen.08.step_type        0
-setp   hm2_6i25.0.stepgen.08.control-type     1
-setp   hm2_6i25.0.stepgen.08.maxaccel         [AXIS_3]STEPGEN_MAXACCEL
-setp   hm2_6i25.0.stepgen.08.maxvel           [AXIS_3]STEPGEN_MAXVEL
+setp   hm2_7i90.0.stepgen.03.dirsetup        [AXIS_3]DIRSETUP
+setp   hm2_7i90.0.stepgen.03.dirhold         [AXIS_3]DIRHOLD
+setp   hm2_7i90.0.stepgen.03.steplen         [AXIS_3]STEPLEN
+setp   hm2_7i90.0.stepgen.03.stepspace       [AXIS_3]STEPSPACE
+setp   hm2_7i90.0.stepgen.03.position-scale  [AXIS_3]STEP_SCALE
+setp   hm2_7i90.0.stepgen.03.step_type        0
+setp   hm2_7i90.0.stepgen.03.control-type     1
+setp   hm2_7i90.0.stepgen.03.maxaccel         [AXIS_3]STEPGEN_MAXACCEL
+setp   hm2_7i90.0.stepgen.03.maxvel           [AXIS_3]STEPGEN_MAXVEL
 
 # ---closedloop stepper signals---
 
 net a-pos-cmd    <= axis.3.motor-pos-cmd
 net a-vel-cmd    <= axis.3.joint-vel-cmd
-net a-output     <= hm2_6i25.0.stepgen.08.velocity-cmd
-net a-pos-fb     <= hm2_6i25.0.stepgen.08.position-fb
+net a-output     <= hm2_7i90.0.stepgen.03.velocity-cmd
+net a-pos-fb     <= hm2_7i90.0.stepgen.03.position-fb
 net a-pos-fb     => axis.3.motor-pos-fb
 net a-enable     <= axis.3.amp-enable-out
-net a-enable     => hm2_6i25.0.stepgen.08.enable
+net a-enable     => hm2_7i90.0.stepgen.03.enable
 
 # ---setup home / limit switch signals---
 
@@ -270,18 +271,18 @@ setp   pid.h0.error-previous-target true
 setp   limit1.h0.min 0
 
 net heater0-index-enable  <=> pid.h0.index-enable
-net heater0-enable         => pid.h0.enable hm2_6i25.0.pwmgen.01.enable
+net heater0-enable         => pid.h0.enable hm2_7i90.0.pwmgen.00.enable
 net heater0-output         <= pid.h0.output
 net heater0-output         => limit1.h0.in
-net heater0-output-clipped <= limit1.h0.out => hm2_6i25.0.pwmgen.01.value
+net heater0-output-clipped <= limit1.h0.out => hm2_7i90.0.pwmgen.00.value
 net heater0-temp-cmd       => pid.h0.command
 net heater0-temp-fb        => pid.h0.feedback
 net heater0-temp-fb       <= max31855.0.temp-celsius.0
 
 # ---PWM Generator signals/setup---
 
-setp hm2_6i25.0.pwmgen.01.output-type 1
-setp hm2_6i25.0.pwmgen.01.scale  [HEATER_0]OUTPUT_SCALE
+setp hm2_7i90.0.pwmgen.00.output-type 1
+setp hm2_7i90.0.pwmgen.00.scale  [HEATER_0]OUTPUT_SCALE
 
 #*******************
 #  Heater 1 (Print Surface);
@@ -301,18 +302,18 @@ setp   pid.h1.error-previous-target true
 setp   limit1.h1.min 0
 
 net heater1-index-enable  <=> pid.h1.index-enable
-net heater1-enable         => pid.h1.enable hm2_6i25.0.pwmgen.02.enable
+net heater1-enable         => pid.h1.enable hm2_7i90.0.pwmgen.01.enable
 net heater1-output         <= pid.h1.output
 net heater1-output         => limit1.h1.in
-net heater1-output-clipped <= limit1.h1.out => hm2_6i25.0.pwmgen.02.value
+net heater1-output-clipped <= limit1.h1.out => hm2_7i90.0.pwmgen.01.value
 net heater1-temp-cmd       => pid.h1.command
 net heater1-temp-fb        => pid.h1.feedback
 net heater1-temp-fb       <= max31855.0.temp-celsius.1
 
 # ---PWM Generator signals/setup---
 
-setp   hm2_6i25.0.pwmgen.02.output-type 1
-setp   hm2_6i25.0.pwmgen.02.scale  [HEATER_1]OUTPUT_SCALE
+setp   hm2_7i90.0.pwmgen.01.output-type 1
+setp   hm2_7i90.0.pwmgen.01.scale  [HEATER_1]OUTPUT_SCALE
 
 
 #******************************
@@ -366,11 +367,4 @@ net machine-is-enabled        <=  motion.motion-enabled
 net estop-out     <=  iocontrol.0.user-enable-out
 net estop-out     =>  iocontrol.0.emc-enable-in
 
-#  ---manual tool change signals---
-
-loadusr -W hal_manualtoolchange
-net tool-change-request     iocontrol.0.tool-change       =>  hal_manualtoolchange.change
-net tool-change-confirmed   iocontrol.0.tool-changed      <=  hal_manualtoolchange.changed
-net tool-number             iocontrol.0.tool-prep-number  =>  hal_manualtoolchange.number
-net tool-prepare-loopback   iocontrol.0.tool-prepare      =>  iocontrol.0.tool-prepared
 
