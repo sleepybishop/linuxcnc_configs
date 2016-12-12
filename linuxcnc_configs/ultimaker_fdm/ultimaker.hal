@@ -1,7 +1,7 @@
 loadrt trivkins
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 loadrt hostmot2
-loadrt hm2_7i90  config="num_stepgens=5 num_pwmgens=3"
+loadrt hm2_7i90 config="num_stepgens=5 num_pwmgens=3"
 
 loadrt max31855 count=1 personality=2
 
@@ -34,12 +34,9 @@ addf limit1.h0                servo-thread
 addf limit1.h1                servo-thread
 addf max31855.0.bitbang-spi   servo-thread
 
-
 # external output signals
 
 # external input signals
-
-# --- ABORT ---
 
 # --- HOME-A ---
 net home-a     <=  hm2_7i90.0.gpio.013.in
@@ -366,5 +363,4 @@ net machine-is-enabled        <=  motion.motion-enabled
 
 net estop-out     <=  iocontrol.0.user-enable-out
 net estop-out     =>  iocontrol.0.emc-enable-in
-
 
