@@ -15,8 +15,8 @@ net spi_clk hm2_6i25.0.gpio.005.out     max31855.0.clk.out
 net spi_cs  hm2_6i25.0.gpio.007.out     max31855.0.cs.out
 net spi_d0  hm2_6i25.0.gpio.003.in      max31855.0.data.0.in
 
-setp    hm2_6i25.0.pwmgen.pwm_frequency 200000
-setp    hm2_6i25.0.pwmgen.pdm_frequency 6000000
+setp    hm2_6i25.0.pwmgen.pwm_frequency 200
+setp    hm2_6i25.0.pwmgen.pdm_frequency 5000
 setp    hm2_6i25.0.watchdog.timeout_ns 5000000
 
 addf hm2_6i25.0.read          servo-thread
