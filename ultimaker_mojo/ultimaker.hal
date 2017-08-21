@@ -261,6 +261,20 @@ net a-enable     => [HOSTMOT2](BOARD).0.stepgen.03.enable
 # ---setup home / limit switch signals---
 
 #*******************
+#  Cooling Fan
+#*******************
+net fan0-enable => [HOSTMOT2](BOARD).0.pwmgen.00.enable
+net fan0-output => [HOSTMOT2](BOARD).0.pwmgen.00.value
+
+sets fan0-enable true
+
+# ---PWM Generator signals/setup---
+
+setp [HOSTMOT2](BOARD).0.pwmgen.00.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.00.scale  [FAN_0]OUTPUT_SCALE
+
+
+#*******************
 #  Heater 0 (Extruder heater block);
 #*******************
 
