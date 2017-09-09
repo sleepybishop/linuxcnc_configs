@@ -286,7 +286,7 @@ setp [HOSTMOT2](BOARD).0.pwmgen.00.scale  [FAN_0]OUTPUT_SCALE
 
 
 #*******************
-#  Heater 0 (Extruder 0 heater block);
+#  Heater 0 (Extruder 0 heater block)
 #*******************
 
 setp   pid.h0.Pgain     [HEATER_0]P
@@ -322,7 +322,7 @@ setp [HOSTMOT2](BOARD).0.pwmgen.01.output-type 1
 setp [HOSTMOT2](BOARD).0.pwmgen.01.scale  [HEATER_0]OUTPUT_SCALE
 
 #*******************
-#  Heater 1 (Print Surface);
+#  Heater 1 (Extruder 1 heater block)
 #*******************
 
 setp   pid.h1.Pgain     [HEATER_1]P
@@ -347,15 +347,51 @@ net heater1-output-clipped <=  limit1.h1.out => [HOSTMOT2](BOARD).0.pwmgen.02.va
 net heater1-temp-cmd        => pid.h1.command
 net heater1-temp-fb         => pid.h1.feedback
 net heater1-temp-fb        <=  lowpass.h1.out
-net heater1-temp-lp        <=  thermistor.0.temp-celsius.0 => lowpass.h1.in
+net heater1-temp-lp        <=  max31855.0.temp-celsius.1 => lowpass.h1.in
 
-sets heater1-enable true
-sets heater1-temp-cmd 60
+sets heater1-enable false
+sets heater1-temp-cmd 185
 
 # ---PWM Generator signals/setup---
 
-setp   [HOSTMOT2](BOARD).0.pwmgen.02.output-type 1
-setp   [HOSTMOT2](BOARD).0.pwmgen.02.scale  [HEATER_1]OUTPUT_SCALE
+setp [HOSTMOT2](BOARD).0.pwmgen.02.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.02.scale  [HEATER_1]OUTPUT_SCALE
+
+#*******************
+#  Heater 2 (Print Surface)
+#*******************
+
+setp   pid.h2.Pgain     [HEATER_2]P
+setp   pid.h2.Igain     [HEATER_2]I
+setp   pid.h2.Dgain     [HEATER_2]D
+setp   pid.h2.bias      [HEATER_2]BIAS
+setp   pid.h2.FF0       [HEATER_2]FF0
+setp   pid.h2.FF1       [HEATER_2]FF1
+setp   pid.h2.FF2       [HEATER_2]FF2
+setp   pid.h2.deadband  [HEATER_2]DEADBAND
+setp   pid.h2.maxoutput [HEATER_2]MAX_OUTPUT
+setp   pid.h2.error-previous-target true
+
+setp limit1.h2.min 0
+setp lowpass.h2.gain 0.01
+
+net heater2-index-enable   <=> pid.h2.index-enable
+net heater2-enable          => pid.h2.enable [HOSTMOT2](BOARD).0.pwmgen.03.enable
+net heater2-output         <=  pid.h2.output
+net heater2-output          => limit1.h2.in
+net heater2-output-clipped <=  limit1.h2.out => [HOSTMOT2](BOARD).0.pwmgen.03.value
+net heater2-temp-cmd        => pid.h2.command
+net heater2-temp-fb         => pid.h2.feedback
+net heater2-temp-fb        <=  lowpass.h2.out
+net heater2-temp-lp        <=  thermistor.0.temp-celsius.0 => lowpass.h2.in
+
+sets heater2-enable true
+sets heater2-temp-cmd 80
+
+# ---PWM Generator signals/setup---
+
+setp   [HOSTMOT2](BOARD).0.pwmgen.03.output-type 1
+setp   [HOSTMOT2](BOARD).0.pwmgen.03.scale  [HEATER_2]OUTPUT_SCALE
 
 
 #******************************
