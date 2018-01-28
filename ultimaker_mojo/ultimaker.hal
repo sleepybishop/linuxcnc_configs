@@ -3,23 +3,15 @@ loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JO
 loadrt hostmot2
 
 loadrt hm2_spi spidev_path=/dev/spidev0.0
-loadrt max31855 count=1 personality=2
+loadrt max31855_bspi bspi_chans=hm2_mojo.0.bspi.0
+loadrt apa102c_bspi bspi_chans=hm2_mojo.0.bspi.1
 
 loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.b,pid.h0,pid.h1,pid.h2
 loadrt limit1 names=limit1.h0,limit1.h1,limit1.h2
 loadrt mult2 names=mult2.a0
 loadrt conv_u32_float names=conv_u32_float.a0
-loadrt lowpass names=lowpass.h0,lowpass.h1,lowpass.h2
 
 loadusr -W thermistor names=thermistor.a0
-
-setp [HOSTMOT2](BOARD).0.gpio.029.is_output  true
-setp [HOSTMOT2](BOARD).0.gpio.035.is_output  true
-
-net spi_clk [HOSTMOT2](BOARD).0.gpio.029.out     max31855.0.clk.out
-net spi_cs  [HOSTMOT2](BOARD).0.gpio.035.out     max31855.0.cs.out
-net spi_d0  [HOSTMOT2](BOARD).0.gpio.031.in      max31855.0.data.0.in
-#net spi_d1  [HOSTMOT2](BOARD).0.gpio.037.in      max31855.0.data.1.in
 
 net a0 hm2_mojo.0.avr.00.adc.00.value => conv_u32_float.a0.in
 net a0f conv_u32_float.a0.out mult2.a0.in0 
@@ -31,6 +23,9 @@ setp thermistor.a0.r0 100
 setp thermistor.a0.t0-c 25
 setp thermistor.a0.v-total 1
 net a0v mult2.a0.out thermistor.a0.v-thermistor
+
+setp apa102c-bspi.0.color.0.out 0x080022ff
+setp apa102c-bspi.0.num-leds.0.out 36
 
 setp    [HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 200
 setp    [HOSTMOT2](BOARD).0.pwmgen.pdm_frequency 5000
@@ -53,18 +48,21 @@ addf limit1.h1                servo-thread
 addf limit1.h2                servo-thread
 addf conv_u32_float.a0        servo-thread
 addf mult2.a0                 servo-thread
-addf lowpass.h2               servo-thread
-addf max31855.0.bitbang-spi   servo-thread
 
 # external signals
 # --- HOME-X ---
-net home-x     <=  [HOSTMOT2](BOARD).0.gpio.005.in_not
+net home-x     <=  [HOSTMOT2](BOARD).0.gpio.004.in_not
 
 # --- HOME-Y ---
 net home-y     <=  [HOSTMOT2](BOARD).0.gpio.002.in
 
 # --- HOME-Z ---
-net home-z     <=  [HOSTMOT2](BOARD).0.gpio.004.in_not
+net home-z     <=  [HOSTMOT2](BOARD).0.gpio.000.in_not
+
+# --- MOTOR EN ---
+setp [HOSTMOT2](BOARD).0.gpio.012.is_output TRUE
+net motors-disabled => [HOSTMOT2](BOARD).0.gpio.012.out
+
 
 #*******************
 #  AXIS X
@@ -312,16 +310,16 @@ net b-enable     => [HOSTMOT2](BOARD).0.stepgen.04.enable
 #*******************
 #  Cooling Fan
 #*******************
-net fan0-enable => [HOSTMOT2](BOARD).0.pwmgen.01.enable
-net fan0-output => [HOSTMOT2](BOARD).0.pwmgen.01.value
-#net fan0-output <= motion.analog-out-00
+net fan0-enable => [HOSTMOT2](BOARD).0.pwmgen.07.enable
+net fan0-output => [HOSTMOT2](BOARD).0.pwmgen.07.value
+net fan0-output <= motion.analog-out-00
 
 sets fan0-enable true
 
 # ---PWM Generator signals/setup---
 
-setp [HOSTMOT2](BOARD).0.pwmgen.01.output-type 1
-setp [HOSTMOT2](BOARD).0.pwmgen.01.scale  [FAN_0]OUTPUT_SCALE
+setp [HOSTMOT2](BOARD).0.pwmgen.07.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.07.scale  [FAN_0]OUTPUT_SCALE
 
 
 #*******************
@@ -340,26 +338,23 @@ setp   pid.h0.maxoutput [HEATER_0]MAX_OUTPUT
 setp   pid.h0.error-previous-target true
 
 setp limit1.h0.min 0
-setp lowpass.h0.gain 0.0005
 
 net heater0-index-enable   <=> pid.h0.index-enable
-net heater0-enable          => pid.h0.enable [HOSTMOT2](BOARD).0.pwmgen.05.enable
+net heater0-enable          => pid.h0.enable [HOSTMOT2](BOARD).0.pwmgen.00.enable
 net heater0-output         <=  pid.h0.output
 net heater0-output          => limit1.h0.in
-net heater0-output-clipped <=  limit1.h0.out => [HOSTMOT2](BOARD).0.pwmgen.05.value
+net heater0-output-clipped <=  limit1.h0.out => [HOSTMOT2](BOARD).0.pwmgen.00.value
 net heater0-temp-cmd        => pid.h0.command
 net heater0-temp-fb         => pid.h0.feedback
-##net heater0-temp-fb        <=  lowpass.h0.out
-##net heater0-temp-lp        <=  max31855.0.temp-celsius.0 => lowpass.h0.in
-net heater0-temp-fb         <=  max31855.0.temp-celsius.0
+net heater0-temp-fb         <=  max31855-bspi.0.temp-celsius.0
 
 sets heater0-enable true
 sets heater0-temp-cmd 185
 
 # ---PWM Generator signals/setup---
 
-setp [HOSTMOT2](BOARD).0.pwmgen.05.output-type 1
-setp [HOSTMOT2](BOARD).0.pwmgen.05.scale  [HEATER_0]OUTPUT_SCALE
+setp [HOSTMOT2](BOARD).0.pwmgen.00.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.00.scale  [HEATER_0]OUTPUT_SCALE
 
 #*******************
 #  Heater 1 (Extruder 1 heater block)
@@ -377,17 +372,15 @@ setp   pid.h1.maxoutput [HEATER_1]MAX_OUTPUT
 setp   pid.h1.error-previous-target true
 
 setp limit1.h1.min 0
-setp lowpass.h1.gain 0.01
 
 net heater1-index-enable   <=> pid.h1.index-enable
-net heater1-enable          => pid.h1.enable [HOSTMOT2](BOARD).0.pwmgen.04.enable
+net heater1-enable          => pid.h1.enable [HOSTMOT2](BOARD).0.pwmgen.01.enable
 net heater1-output         <=  pid.h1.output
 net heater1-output          => limit1.h1.in
-net heater1-output-clipped <=  limit1.h1.out => [HOSTMOT2](BOARD).0.pwmgen.04.value
+net heater1-output-clipped <=  limit1.h1.out => [HOSTMOT2](BOARD).0.pwmgen.01.value
 net heater1-temp-cmd        => pid.h1.command
 net heater1-temp-fb         => pid.h1.feedback
-net heater1-temp-fb        <=  lowpass.h1.out
-net heater1-temp-lp        <=  max31855.0.temp-celsius.1 => lowpass.h1.in
+net heater1-temp-fb        <=  max31855-bspi.0.temp-celsius.1 
 
 sets heater1-enable false
 sets heater1-temp-cmd 185
@@ -413,25 +406,23 @@ setp   pid.h2.maxoutput [HEATER_2]MAX_OUTPUT
 setp   pid.h2.error-previous-target true
 
 setp limit1.h2.min 0
-setp lowpass.h2.gain 0.0005
 
 net heater2-index-enable   <=> pid.h2.index-enable
-net heater2-enable          => pid.h2.enable [HOSTMOT2](BOARD).0.pwmgen.06.enable
+net heater2-enable          => pid.h2.enable [HOSTMOT2](BOARD).0.pwmgen.02.enable
 net heater2-output         <=  pid.h2.output
 net heater2-output          => limit1.h2.in
-net heater2-output-clipped <=  limit1.h2.out => [HOSTMOT2](BOARD).0.pwmgen.06.value
+net heater2-output-clipped <=  limit1.h2.out => [HOSTMOT2](BOARD).0.pwmgen.02.value
 net heater2-temp-cmd        => pid.h2.command
 net heater2-temp-fb         => pid.h2.feedback
-net heater2-temp-fb        <=  lowpass.h2.out
-net heater2-temp-lp        <=  thermistor.a0.temperature-c => lowpass.h2.in
+net heater2-temp-fb        <=  thermistor.a0.temperature-c 
 
 sets heater2-enable true
 sets heater2-temp-cmd 80
 
 # ---PWM Generator signals/setup---
 
-setp   [HOSTMOT2](BOARD).0.pwmgen.06.output-type 1
-setp   [HOSTMOT2](BOARD).0.pwmgen.06.scale  [HEATER_2]OUTPUT_SCALE
+setp   [HOSTMOT2](BOARD).0.pwmgen.02.output-type 1
+setp   [HOSTMOT2](BOARD).0.pwmgen.02.scale  [HEATER_2]OUTPUT_SCALE
 
 
 #******************************
