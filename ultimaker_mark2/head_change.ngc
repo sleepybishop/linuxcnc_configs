@@ -1,0 +1,34 @@
+
+o<head_change> sub
+M73
+o300 if [#<_selected_tool> EQ 0]
+  o310 if [#<_current_tool> EQ 1]
+
+  ;park
+  G53 G1  X30 Y-68 F3000
+  G53 G1 X106 Y-68 F3000
+  G53 G1 X106 Y0.0 F3000
+  M6
+
+  o310 endif
+o300 endif
+
+o400 if [#<_selected_tool> EQ 1]
+  o410 if [#<_current_tool> EQ 0]
+
+  ; safe height
+  G91
+  G0 Z+4
+  G90
+
+  ; pick
+  G53 G1 X106 Y-60 F3000
+  G53 G1 X106 Y-68 F3000
+  G53 G1 X0.0 Y-68 F3000
+  M6
+
+  o410 endif
+o400 endif
+
+o<head_change> end sub
+M2

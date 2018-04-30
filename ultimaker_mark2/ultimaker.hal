@@ -1,0 +1,481 @@
+loadrt [KINS]KINEMATICS
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS 
+loadrt hostmot2
+
+loadrt hm2_spi spidev_path=/dev/spidev0.0
+loadrt max31855_bspi bspi_chans=hm2_mojo.0.bspi.0
+loadrt apa102c_bspi bspi_chans=hm2_mojo.0.bspi.1
+
+loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.b,pid.h0,pid.h1,pid.h2
+loadrt limit1 names=limit1.h0,limit1.h1,limit1.h2
+loadrt mult2 names=mult2.a0
+loadrt conv_u32_float names=conv_u32_float.a0
+
+loadusr -W thermistor names=thermistor.a0
+
+net a0 hm2_mojo.0.avr.00.adc.00.value => conv_u32_float.a0.in
+net a0f conv_u32_float.a0.out mult2.a0.in0 
+setp mult2.a0.in1 0.0009765625
+
+setp thermistor.a0.beta 4500
+setp thermistor.a0.r-other 100
+setp thermistor.a0.r0 100
+setp thermistor.a0.t0-c 25
+setp thermistor.a0.v-total 1
+net a0v mult2.a0.out thermistor.a0.v-thermistor
+
+setp apa102c-bspi.0.color.0.out 0x080022ff
+setp apa102c-bspi.0.num-leds.0.out 36
+
+setp    [HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 200
+setp    [HOSTMOT2](BOARD).0.pwmgen.pdm_frequency 5000
+setp    [HOSTMOT2](BOARD).0.watchdog.timeout_ns 500000000
+
+addf [HOSTMOT2](BOARD).0.read          servo-thread
+addf [HOSTMOT2](BOARD).0.write         servo-thread
+addf motion-command-handler   servo-thread
+addf motion-controller        servo-thread
+addf pid.x.do-pid-calcs       servo-thread
+addf pid.y.do-pid-calcs       servo-thread
+addf pid.z.do-pid-calcs       servo-thread
+addf pid.a.do-pid-calcs       servo-thread
+addf pid.b.do-pid-calcs       servo-thread
+addf pid.h0.do-pid-calcs      servo-thread
+addf pid.h1.do-pid-calcs      servo-thread
+addf pid.h2.do-pid-calcs      servo-thread
+addf limit1.h0                servo-thread
+addf limit1.h1                servo-thread
+addf limit1.h2                servo-thread
+addf conv_u32_float.a0        servo-thread
+addf mult2.a0                 servo-thread
+
+# external signals
+# --- HOME-X ---
+net home-x     <=  [HOSTMOT2](BOARD).0.gpio.002.in_not
+
+# --- HOME-Y ---
+net home-y     <=  [HOSTMOT2](BOARD).0.gpio.005.in
+
+# --- HOME-Z ---
+net home-z     <=  [HOSTMOT2](BOARD).0.gpio.000.in_not
+
+# --- MOTOR EN ---
+setp [HOSTMOT2](BOARD).0.gpio.012.is_output TRUE
+net motors-disabled => [HOSTMOT2](BOARD).0.gpio.012.out
+
+
+#*******************
+#  AXIS X
+#*******************
+
+setp   pid.x.Pgain     [JOINT_0]P
+setp   pid.x.Igain     [JOINT_0]I
+setp   pid.x.Dgain     [JOINT_0]D
+setp   pid.x.bias      [JOINT_0]BIAS
+setp   pid.x.FF0       [JOINT_0]FF0
+setp   pid.x.FF1       [JOINT_0]FF1
+setp   pid.x.FF2       [JOINT_0]FF2
+setp   pid.x.deadband  [JOINT_0]DEADBAND
+setp   pid.x.maxoutput [JOINT_0]MAX_OUTPUT
+setp   pid.x.error-previous-target true
+setp   pid.x.maxerror .0005
+
+net x-index-enable  <=> pid.x.index-enable
+net x-enable        =>  pid.x.enable
+net x-output        =>  pid.x.output
+net x-pos-cmd       =>  pid.x.command
+net x-vel-cmd       =>  pid.x.command-deriv
+net x-pos-fb        =>  pid.x.feedback
+
+# Step Gen signals/setup
+
+setp   [HOSTMOT2](BOARD).0.stepgen.00.dirsetup        [JOINT_0]DIRSETUP
+setp   [HOSTMOT2](BOARD).0.stepgen.00.dirhold         [JOINT_0]DIRHOLD
+setp   [HOSTMOT2](BOARD).0.stepgen.00.steplen         [JOINT_0]STEPLEN
+setp   [HOSTMOT2](BOARD).0.stepgen.00.stepspace       [JOINT_0]STEPSPACE
+setp   [HOSTMOT2](BOARD).0.stepgen.00.position-scale  [JOINT_0]STEP_SCALE
+setp   [HOSTMOT2](BOARD).0.stepgen.00.step_type        0
+setp   [HOSTMOT2](BOARD).0.stepgen.00.control-type     1
+setp   [HOSTMOT2](BOARD).0.stepgen.00.maxaccel         [JOINT_0]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.00.maxvel           [JOINT_0]STEPGEN_MAXVEL
+
+# ---closedloop stepper signals---
+
+net x-pos-cmd    <= joint.0.motor-pos-cmd
+net x-vel-cmd    <= joint.0.vel-cmd
+net x-output     <= [HOSTMOT2](BOARD).0.stepgen.00.velocity-cmd
+net x-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.00.position-fb
+net x-pos-fb     => joint.0.motor-pos-fb
+net x-enable     <= joint.0.amp-enable-out
+net x-enable     => [HOSTMOT2](BOARD).0.stepgen.00.enable
+
+# ---setup home / limit switch signals---
+
+net home-x     =>  joint.0.home-sw-in
+net x-neg-limit     =>  joint.0.neg-lim-sw-in
+net x-pos-limit     =>  joint.0.pos-lim-sw-in
+
+#*******************
+#  AXIS Y
+#*******************
+
+setp   pid.y.Pgain     [JOINT_1]P
+setp   pid.y.Igain     [JOINT_1]I
+setp   pid.y.Dgain     [JOINT_1]D
+setp   pid.y.bias      [JOINT_1]BIAS
+setp   pid.y.FF0       [JOINT_1]FF0
+setp   pid.y.FF1       [JOINT_1]FF1
+setp   pid.y.FF2       [JOINT_1]FF2
+setp   pid.y.deadband  [JOINT_1]DEADBAND
+setp   pid.y.maxoutput [JOINT_1]MAX_OUTPUT
+setp   pid.y.error-previous-target true
+setp   pid.y.maxerror .0005
+
+net y-index-enable  <=> pid.y.index-enable
+net y-enable        =>  pid.y.enable
+net y-output        =>  pid.y.output
+net y-pos-cmd       =>  pid.y.command
+net y-vel-cmd       =>  pid.y.command-deriv
+net y-pos-fb        =>  pid.y.feedback
+
+# Step Gen signals/setup
+
+setp   [HOSTMOT2](BOARD).0.stepgen.01.dirsetup        [JOINT_1]DIRSETUP
+setp   [HOSTMOT2](BOARD).0.stepgen.01.dirhold         [JOINT_1]DIRHOLD
+setp   [HOSTMOT2](BOARD).0.stepgen.01.steplen         [JOINT_1]STEPLEN
+setp   [HOSTMOT2](BOARD).0.stepgen.01.stepspace       [JOINT_1]STEPSPACE
+setp   [HOSTMOT2](BOARD).0.stepgen.01.position-scale  [JOINT_1]STEP_SCALE
+setp   [HOSTMOT2](BOARD).0.stepgen.01.step_type        0
+setp   [HOSTMOT2](BOARD).0.stepgen.01.control-type     1
+setp   [HOSTMOT2](BOARD).0.stepgen.01.maxaccel         [JOINT_1]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.01.maxvel           [JOINT_1]STEPGEN_MAXVEL
+
+# ---closedloop stepper signals---
+
+net y-pos-cmd    <= joint.1.motor-pos-cmd
+net y-vel-cmd    <= joint.1.vel-cmd
+net y-output     <= [HOSTMOT2](BOARD).0.stepgen.01.velocity-cmd
+net y-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.01.position-fb
+net y-pos-fb     => joint.1.motor-pos-fb
+net y-enable     <= joint.1.amp-enable-out
+net y-enable     => [HOSTMOT2](BOARD).0.stepgen.01.enable
+
+# ---setup home / limit switch signals---
+
+net home-y     =>  joint.1.home-sw-in
+net y-neg-limit     =>  joint.1.neg-lim-sw-in
+net y-pos-limit     =>  joint.1.pos-lim-sw-in
+
+#*******************
+#  AXIS Z
+#*******************
+
+setp   pid.z.Pgain     [JOINT_2]P
+setp   pid.z.Igain     [JOINT_2]I
+setp   pid.z.Dgain     [JOINT_2]D
+setp   pid.z.bias      [JOINT_2]BIAS
+setp   pid.z.FF0       [JOINT_2]FF0
+setp   pid.z.FF1       [JOINT_2]FF1
+setp   pid.z.FF2       [JOINT_2]FF2
+setp   pid.z.deadband  [JOINT_2]DEADBAND
+setp   pid.z.maxoutput [JOINT_2]MAX_OUTPUT
+setp   pid.z.error-previous-target true
+setp   pid.z.maxerror .0005
+
+net z-index-enable  <=> pid.z.index-enable
+net z-enable        =>  pid.z.enable
+net z-output        =>  pid.z.output
+net z-pos-cmd       =>  pid.z.command
+net z-vel-cmd       =>  pid.z.command-deriv
+net z-pos-fb        =>  pid.z.feedback
+
+# Step Gen signals/setup
+
+setp   [HOSTMOT2](BOARD).0.stepgen.02.dirsetup        [JOINT_2]DIRSETUP
+setp   [HOSTMOT2](BOARD).0.stepgen.02.dirhold         [JOINT_2]DIRHOLD
+setp   [HOSTMOT2](BOARD).0.stepgen.02.steplen         [JOINT_2]STEPLEN
+setp   [HOSTMOT2](BOARD).0.stepgen.02.stepspace       [JOINT_2]STEPSPACE
+setp   [HOSTMOT2](BOARD).0.stepgen.02.position-scale  [JOINT_2]STEP_SCALE
+setp   [HOSTMOT2](BOARD).0.stepgen.02.step_type        0
+setp   [HOSTMOT2](BOARD).0.stepgen.02.control-type     1
+setp   [HOSTMOT2](BOARD).0.stepgen.02.maxaccel         [JOINT_2]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.02.maxvel           [JOINT_2]STEPGEN_MAXVEL
+
+# ---closedloop stepper signals---
+
+net z-pos-cmd    <= joint.2.motor-pos-cmd
+net z-vel-cmd    <= joint.2.vel-cmd
+net z-output     <= [HOSTMOT2](BOARD).0.stepgen.02.velocity-cmd
+net z-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.02.position-fb
+net z-pos-fb     => joint.2.motor-pos-fb
+net z-enable     <= joint.2.amp-enable-out
+net z-enable     => [HOSTMOT2](BOARD).0.stepgen.02.enable
+
+# ---setup home / limit switch signals---
+
+net home-z     =>  joint.2.home-sw-in
+net z-neg-limit     =>  joint.2.neg-lim-sw-in
+net z-pos-limit     =>  joint.2.pos-lim-sw-in
+
+#*******************
+#  AXIS A
+#*******************
+
+setp   pid.a.Pgain     [JOINT_3]P
+setp   pid.a.Igain     [JOINT_3]I
+setp   pid.a.Dgain     [JOINT_3]D
+setp   pid.a.bias      [JOINT_3]BIAS
+setp   pid.a.FF0       [JOINT_3]FF0
+setp   pid.a.FF1       [JOINT_3]FF1
+setp   pid.a.FF2       [JOINT_3]FF2
+setp   pid.a.deadband  [JOINT_3]DEADBAND
+setp   pid.a.maxoutput [JOINT_3]MAX_OUTPUT
+setp   pid.a.error-previous-target true
+setp   pid.a.maxerror .0005
+
+net a-index-enable  <=> pid.a.index-enable
+net a-enable        =>  pid.a.enable
+net a-output        =>  pid.a.output
+net a-pos-cmd       =>  pid.a.command
+net a-vel-cmd       =>  pid.a.command-deriv
+net a-pos-fb        =>  pid.a.feedback
+
+# Step Gen signals/setup
+
+setp   [HOSTMOT2](BOARD).0.stepgen.03.dirsetup        [JOINT_3]DIRSETUP
+setp   [HOSTMOT2](BOARD).0.stepgen.03.dirhold         [JOINT_3]DIRHOLD
+setp   [HOSTMOT2](BOARD).0.stepgen.03.steplen         [JOINT_3]STEPLEN
+setp   [HOSTMOT2](BOARD).0.stepgen.03.stepspace       [JOINT_3]STEPSPACE
+setp   [HOSTMOT2](BOARD).0.stepgen.03.position-scale  [JOINT_3]STEP_SCALE
+setp   [HOSTMOT2](BOARD).0.stepgen.03.step_type        0
+setp   [HOSTMOT2](BOARD).0.stepgen.03.control-type     1
+setp   [HOSTMOT2](BOARD).0.stepgen.03.maxaccel         [JOINT_3]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.03.maxvel           [JOINT_3]STEPGEN_MAXVEL
+
+# ---closedloop stepper signals---
+
+net a-pos-cmd    <= joint.3.motor-pos-cmd
+net a-vel-cmd    <= joint.3.vel-cmd
+net a-output     <= [HOSTMOT2](BOARD).0.stepgen.03.velocity-cmd
+net a-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.03.position-fb
+net a-pos-fb     => joint.3.motor-pos-fb
+net a-enable     <= joint.3.amp-enable-out
+net a-enable     => [HOSTMOT2](BOARD).0.stepgen.03.enable
+
+#*******************
+#  AXIS B
+#*******************
+
+setp   pid.b.Pgain     [JOINT_4]P
+setp   pid.b.Igain     [JOINT_4]I
+setp   pid.b.Dgain     [JOINT_4]D
+setp   pid.b.bias      [JOINT_4]BIAS
+setp   pid.b.FF0       [JOINT_4]FF0
+setp   pid.b.FF1       [JOINT_4]FF1
+setp   pid.b.FF2       [JOINT_4]FF2
+setp   pid.b.deadband  [JOINT_4]DEADBAND
+setp   pid.b.maxoutput [JOINT_4]MAX_OUTPUT
+setp   pid.b.error-previous-target true
+setp   pid.b.maxerror .0005
+
+net b-index-enable  <=> pid.b.index-enable
+net b-enable        =>  pid.b.enable
+net b-output        =>  pid.b.output
+net b-pos-cmd       =>  pid.b.command
+net b-vel-cmd       =>  pid.b.command-deriv
+net b-pos-fb        =>  pid.b.feedback
+
+# Step Gen signals/setup
+
+setp   [HOSTMOT2](BOARD).0.stepgen.04.dirsetup        [JOINT_4]DIRSETUP
+setp   [HOSTMOT2](BOARD).0.stepgen.04.dirhold         [JOINT_4]DIRHOLD
+setp   [HOSTMOT2](BOARD).0.stepgen.04.steplen         [JOINT_4]STEPLEN
+setp   [HOSTMOT2](BOARD).0.stepgen.04.stepspace       [JOINT_4]STEPSPACE
+setp   [HOSTMOT2](BOARD).0.stepgen.04.position-scale  [JOINT_4]STEP_SCALE
+setp   [HOSTMOT2](BOARD).0.stepgen.04.step_type        0
+setp   [HOSTMOT2](BOARD).0.stepgen.04.control-type     1
+setp   [HOSTMOT2](BOARD).0.stepgen.04.maxaccel         [JOINT_4]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.04.maxvel           [JOINT_4]STEPGEN_MAXVEL
+
+# ---closedloop stepper signals---
+
+net b-pos-cmd    <= joint.4.motor-pos-cmd
+net b-vel-cmd    <= joint.4.vel-cmd
+net b-output     <= [HOSTMOT2](BOARD).0.stepgen.04.velocity-cmd
+net b-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.04.position-fb
+net b-pos-fb     => joint.4.motor-pos-fb
+net b-enable     <= joint.4.amp-enable-out
+net b-enable     => [HOSTMOT2](BOARD).0.stepgen.04.enable
+
+#*******************
+#  Cooling Fan
+#*******************
+net fan0-enable => [HOSTMOT2](BOARD).0.pwmgen.07.enable
+net fan0-output => [HOSTMOT2](BOARD).0.pwmgen.07.value
+net fan0-output <= motion.analog-out-00
+
+sets fan0-enable true
+
+# ---PWM Generator signals/setup---
+
+setp [HOSTMOT2](BOARD).0.pwmgen.07.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.07.scale  [FAN_0]OUTPUT_SCALE
+
+
+#*******************
+#  Heater 0 (Extruder 0 heater block)
+#*******************
+
+setp   pid.h0.Pgain     [HEATER_0]P
+setp   pid.h0.Igain     [HEATER_0]I
+setp   pid.h0.Dgain     [HEATER_0]D
+setp   pid.h0.bias      [HEATER_0]BIAS
+setp   pid.h0.FF0       [HEATER_0]FF0
+setp   pid.h0.FF1       [HEATER_0]FF1
+setp   pid.h0.FF2       [HEATER_0]FF2
+setp   pid.h0.deadband  [HEATER_0]DEADBAND
+setp   pid.h0.maxoutput [HEATER_0]MAX_OUTPUT
+setp   pid.h0.error-previous-target true
+
+setp limit1.h0.min 0
+
+net heater0-index-enable   <=> pid.h0.index-enable
+net heater0-enable          => pid.h0.enable [HOSTMOT2](BOARD).0.pwmgen.00.enable
+net heater0-output         <=  pid.h0.output
+net heater0-output          => limit1.h0.in
+net heater0-output-clipped <=  limit1.h0.out => [HOSTMOT2](BOARD).0.pwmgen.00.value
+net heater0-temp-cmd        => pid.h0.command
+net heater0-temp-fb         => pid.h0.feedback
+net heater0-temp-fb         <=  max31855-bspi.0.temp-celsius.0
+
+sets heater0-enable true
+sets heater0-temp-cmd 185
+
+# ---PWM Generator signals/setup---
+
+setp [HOSTMOT2](BOARD).0.pwmgen.00.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.00.scale  [HEATER_0]OUTPUT_SCALE
+
+#*******************
+#  Heater 1 (Extruder 1 heater block)
+#*******************
+
+setp   pid.h1.Pgain     [HEATER_1]P
+setp   pid.h1.Igain     [HEATER_1]I
+setp   pid.h1.Dgain     [HEATER_1]D
+setp   pid.h1.bias      [HEATER_1]BIAS
+setp   pid.h1.FF0       [HEATER_1]FF0
+setp   pid.h1.FF1       [HEATER_1]FF1
+setp   pid.h1.FF2       [HEATER_1]FF2
+setp   pid.h1.deadband  [HEATER_1]DEADBAND
+setp   pid.h1.maxoutput [HEATER_1]MAX_OUTPUT
+setp   pid.h1.error-previous-target true
+
+setp limit1.h1.min 0
+
+net heater1-index-enable   <=> pid.h1.index-enable
+net heater1-enable          => pid.h1.enable [HOSTMOT2](BOARD).0.pwmgen.01.enable
+net heater1-output         <=  pid.h1.output
+net heater1-output          => limit1.h1.in
+net heater1-output-clipped <=  limit1.h1.out => [HOSTMOT2](BOARD).0.pwmgen.01.value
+net heater1-temp-cmd        => pid.h1.command
+net heater1-temp-fb         => pid.h1.feedback
+net heater1-temp-fb        <=  max31855-bspi.0.temp-celsius.1 
+
+sets heater1-enable false
+sets heater1-temp-cmd 185
+
+# ---PWM Generator signals/setup---
+
+setp [HOSTMOT2](BOARD).0.pwmgen.01.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.01.scale  [HEATER_1]OUTPUT_SCALE
+
+#*******************
+#  Heater 2 (Print Surface)
+#*******************
+
+setp   pid.h2.Pgain     [HEATER_2]P
+setp   pid.h2.Igain     [HEATER_2]I
+setp   pid.h2.Dgain     [HEATER_2]D
+setp   pid.h2.bias      [HEATER_2]BIAS
+setp   pid.h2.FF0       [HEATER_2]FF0
+setp   pid.h2.FF1       [HEATER_2]FF1
+setp   pid.h2.FF2       [HEATER_2]FF2
+setp   pid.h2.deadband  [HEATER_2]DEADBAND
+setp   pid.h2.maxoutput [HEATER_2]MAX_OUTPUT
+setp   pid.h2.error-previous-target true
+
+setp limit1.h2.min 0
+
+net heater2-index-enable   <=> pid.h2.index-enable
+net heater2-enable          => pid.h2.enable [HOSTMOT2](BOARD).0.pwmgen.02.enable
+net heater2-output         <=  pid.h2.output
+net heater2-output          => limit1.h2.in
+net heater2-output-clipped <=  limit1.h2.out => [HOSTMOT2](BOARD).0.pwmgen.02.value
+net heater2-temp-cmd        => pid.h2.command
+net heater2-temp-fb         => pid.h2.feedback
+net heater2-temp-fb        <=  thermistor.a0.temperature-c 
+
+sets heater2-enable true
+sets heater2-temp-cmd 80
+
+# ---PWM Generator signals/setup---
+
+setp   [HOSTMOT2](BOARD).0.pwmgen.02.output-type 1
+setp   [HOSTMOT2](BOARD).0.pwmgen.02.scale  [HEATER_2]OUTPUT_SCALE
+
+
+#******************************
+# connect miscellaneous signals
+#******************************
+
+#  ---HALUI signals---
+
+net joint-select-a        halui.axis.x.select
+net x-is-homed            halui.joint.0.is-homed
+net jog-x-pos             halui.axis.x.plus
+net jog-x-neg             halui.axis.x.minus
+net jog-x-analog          halui.axis.x.analog
+net joint-select-b        halui.axis.y.select
+net y-is-homed            halui.joint.1.is-homed
+net jog-y-pos             halui.axis.y.plus
+net jog-y-neg             halui.axis.y.minus
+net jog-y-analog          halui.axis.y.analog
+net joint-select-c        halui.axis.z.select
+net z-is-homed            halui.joint.2.is-homed
+net jog-z-pos             halui.axis.z.plus
+net jog-z-neg             halui.axis.z.minus
+net jog-z-analog          halui.axis.z.analog
+net jog-selected-pos      halui.axis.selected.plus
+net jog-selected-neg      halui.axis.selected.minus
+net spindle-manual-cw     halui.spindle.forward
+net spindle-manual-ccw    halui.spindle.reverse
+net spindle-manual-stop   halui.spindle.stop
+net machine-is-on         halui.machine.is-on
+net jog-speed             halui.axis.jog-speed 
+net MDI-mode              halui.mode.is-mdi
+
+#  ---coolant signals---
+
+net coolant-mist      <=  iocontrol.0.coolant-mist
+net coolant-flood     <=  iocontrol.0.coolant-flood
+
+#  ---probe signal---
+
+net probe-in     =>  motion.probe-input
+
+#  ---motion control signals---
+
+net in-position               <=  motion.in-position
+net machine-is-enabled        <=  motion.motion-enabled
+
+#  ---digital in / out signals---
+
+#  ---estop signals---
+
+net estop-out     <=  iocontrol.0.user-enable-out
+net estop-out     =>  iocontrol.0.emc-enable-in
+
+# tool changer loopbacks
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
