@@ -387,8 +387,8 @@ sets heater1-temp-cmd 185
 
 # ---PWM Generator signals/setup---
 
-setp [HOSTMOT2](BOARD).0.pwmgen.04.output-type 1
-setp [HOSTMOT2](BOARD).0.pwmgen.04.scale  [HEATER_1]OUTPUT_SCALE
+setp [HOSTMOT2](BOARD).0.pwmgen.01.output-type 1
+setp [HOSTMOT2](BOARD).0.pwmgen.01.scale  [HEATER_1]OUTPUT_SCALE
 
 #*******************
 #  Heater 2 (Print Surface)
