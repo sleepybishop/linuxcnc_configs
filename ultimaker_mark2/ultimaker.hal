@@ -382,7 +382,7 @@ net heater1-temp-cmd        => pid.h1.command
 net heater1-temp-fb         => pid.h1.feedback
 net heater1-temp-fb        <=  max31855-bspi.0.temp-celsius.1 
 
-sets heater1-enable false
+sets heater1-enable true
 sets heater1-temp-cmd 185
 
 # ---PWM Generator signals/setup---
