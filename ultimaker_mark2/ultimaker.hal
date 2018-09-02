@@ -63,7 +63,6 @@ net home-z     <=  [HOSTMOT2](BOARD).0.gpio.000.in_not
 setp [HOSTMOT2](BOARD).0.gpio.012.is_output TRUE
 net motors-disabled => [HOSTMOT2](BOARD).0.gpio.012.out
 
-
 #*******************
 #  AXIS X
 #*******************
