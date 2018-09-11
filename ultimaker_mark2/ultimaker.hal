@@ -8,6 +8,7 @@ loadrt apa102c_bspi bspi_chans=hm2_mojo.0.bspi.1
 
 loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.b,pid.h0,pid.h1,pid.h2
 loadrt limit1 names=limit1.h0,limit1.h1,limit1.h2
+loadrt near names=near.h0,near.h1,near.h2
 loadrt mult2 names=mult2.a0
 loadrt conv_u32_float names=conv_u32_float.a0
 
@@ -46,6 +47,9 @@ addf pid.h2.do-pid-calcs      servo-thread
 addf limit1.h0                servo-thread
 addf limit1.h1                servo-thread
 addf limit1.h2                servo-thread
+addf near.h0                  servo-thread
+addf near.h1                  servo-thread
+addf near.h2                  servo-thread
 addf conv_u32_float.a0        servo-thread
 addf mult2.a0                 servo-thread
 
@@ -61,7 +65,8 @@ net home-z     <=  [HOSTMOT2](BOARD).0.gpio.000.in_not
 
 # --- MOTOR EN ---
 setp [HOSTMOT2](BOARD).0.gpio.012.is_output TRUE
-net motors-disabled => [HOSTMOT2](BOARD).0.gpio.012.out
+setp [HOSTMOT2](BOARD).0.gpio.012.invert_output TRUE
+net machine-is-enabled => [HOSTMOT2](BOARD).0.gpio.012.out
 
 #*******************
 #  AXIS X
@@ -343,12 +348,15 @@ net heater0-enable          => pid.h0.enable [HOSTMOT2](BOARD).0.pwmgen.00.enabl
 net heater0-output         <=  pid.h0.output
 net heater0-output          => limit1.h0.in
 net heater0-output-clipped <=  limit1.h0.out => [HOSTMOT2](BOARD).0.pwmgen.00.value
-net heater0-temp-cmd        => pid.h0.command
-net heater0-temp-fb         => pid.h0.feedback
+net heater0-temp-cmd        => pid.h0.command => near.h0.in1
+net heater0-temp-fb         => pid.h0.feedback => near.h0.in2
 net heater0-temp-fb         <=  max31855-bspi.0.temp-celsius.0
+net heater0-ready           => near.h0.out => motion.digital-in-01
 
+setp near.h0.difference 8
 sets heater0-enable true
-sets heater0-temp-cmd 185
+net heater0-temp-cmd <= motion.analog-out-01
+
 
 # ---PWM Generator signals/setup---
 
@@ -377,12 +385,14 @@ net heater1-enable          => pid.h1.enable [HOSTMOT2](BOARD).0.pwmgen.01.enabl
 net heater1-output         <=  pid.h1.output
 net heater1-output          => limit1.h1.in
 net heater1-output-clipped <=  limit1.h1.out => [HOSTMOT2](BOARD).0.pwmgen.01.value
-net heater1-temp-cmd        => pid.h1.command
-net heater1-temp-fb         => pid.h1.feedback
-net heater1-temp-fb        <=  max31855-bspi.0.temp-celsius.1 
+net heater1-temp-cmd        => pid.h1.command => near.h1.in1
+net heater1-temp-fb         => pid.h1.feedback => near.h1.in2
+net heater1-temp-fb        <=  max31855-bspi.0.temp-celsius.1
+net heater1-ready          => near.h1.out => motion.digital-in-02
 
+setp near.h1.difference 8
 sets heater1-enable true
-sets heater1-temp-cmd 185
+net heater1-temp-cmd <= motion.analog-out-02
 
 # ---PWM Generator signals/setup---
 
@@ -411,12 +421,14 @@ net heater2-enable          => pid.h2.enable [HOSTMOT2](BOARD).0.pwmgen.02.enabl
 net heater2-output         <=  pid.h2.output
 net heater2-output          => limit1.h2.in
 net heater2-output-clipped <=  limit1.h2.out => [HOSTMOT2](BOARD).0.pwmgen.02.value
-net heater2-temp-cmd        => pid.h2.command
-net heater2-temp-fb         => pid.h2.feedback
+net heater2-temp-cmd        => pid.h2.command => near.h2.in1
+net heater2-temp-fb         => pid.h2.feedback => near.h2.in2
 net heater2-temp-fb        <=  thermistor.a0.temperature-c 
+net heater2-ready          => near.h2.out => motion.digital-in-03
 
+setp near.h2.difference 8
 sets heater2-enable true
-sets heater2-temp-cmd 80
+net heater2-temp-cmd <= motion.analog-out-03
 
 # ---PWM Generator signals/setup---
 
