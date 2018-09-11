@@ -1,0 +1,10 @@
+o<m109> sub
+	#500=1
+	o100 if [EXISTS[#<t>]]
+		M68 E[#<t>+#500] Q#<S>
+		M66 P[#<t>+#500] L3 Q1000
+	o100 else
+		M68 E[#500] Q#<S>
+		M66 P[#500] L3 Q1000
+	o100 endif
+o<m109> end sub
