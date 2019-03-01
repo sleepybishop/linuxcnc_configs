@@ -14,7 +14,7 @@ loadrt conv_u32_float names=conv_u32_float.a0
 
 loadusr -W thermistor names=thermistor.a0
 
-net a0 hm2_mojo.0.avr.00.adc.00.value => conv_u32_float.a0.in
+net a0 hm2_mojo.0.adc.00.chan.00.value => conv_u32_float.a0.in
 net a0f conv_u32_float.a0.out mult2.a0.in0 
 setp mult2.a0.in1 0.0009765625
 
