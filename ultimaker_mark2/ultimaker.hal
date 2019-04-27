@@ -353,7 +353,7 @@ net heater0-temp-fb         => pid.h0.feedback => near.h0.in2
 net heater0-temp-fb         <=  max31855-bspi.0.temp-celsius.0
 net heater0-ready           => near.h0.out => motion.digital-in-01
 
-setp near.h0.difference 8
+setp near.h0.difference 10
 sets heater0-enable true
 net heater0-temp-cmd <= motion.analog-out-01
 
@@ -390,7 +390,7 @@ net heater1-temp-fb         => pid.h1.feedback => near.h1.in2
 net heater1-temp-fb        <=  max31855-bspi.0.temp-celsius.1
 net heater1-ready          => near.h1.out => motion.digital-in-02
 
-setp near.h1.difference 8
+setp near.h1.difference 10
 sets heater1-enable true
 net heater1-temp-cmd <= motion.analog-out-02
 
@@ -426,7 +426,7 @@ net heater2-temp-fb         => pid.h2.feedback => near.h2.in2
 net heater2-temp-fb        <=  thermistor.a0.temperature-c 
 net heater2-ready          => near.h2.out => motion.digital-in-03
 
-setp near.h2.difference 8
+setp near.h2.difference 10
 sets heater2-enable true
 net heater2-temp-cmd <= motion.analog-out-03
 
@@ -459,9 +459,6 @@ net jog-z-neg             halui.axis.z.minus
 net jog-z-analog          halui.axis.z.analog
 net jog-selected-pos      halui.axis.selected.plus
 net jog-selected-neg      halui.axis.selected.minus
-net spindle-manual-cw     halui.spindle.forward
-net spindle-manual-ccw    halui.spindle.reverse
-net spindle-manual-stop   halui.spindle.stop
 net machine-is-on         halui.machine.is-on
 net jog-speed             halui.axis.jog-speed 
 net MDI-mode              halui.mode.is-mdi
