@@ -11,3 +11,7 @@
 
 [firepick scara](https://www.thingiverse.com/thing:1656504)
  * scarabot - a small scara arm for pcb pick and place applications
+
+[ar2 robot arm](https://www.thingiverse.com/thing:2554129)
+ * ar2\_au\_duex5 - 6 dof robot arm using alchitry au fpga / duex5 for hardware control
+
