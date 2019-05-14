@@ -11,11 +11,11 @@ loadusr -W sx1509b
 
 # configure motor currents
 setp tmc26x-bspi.0.maxcurrent.0.out 1650
-setp tmc26x-bspi.1.maxcurrent.0.out 2800
-setp tmc26x-bspi.2.maxcurrent.0.out 1650
-setp tmc26x-bspi.3.maxcurrent.0.out 1650
-setp tmc26x-bspi.4.maxcurrent.0.out  670
-setp tmc26x-bspi.5.maxcurrent.0.out  820
+setp tmc26x-bspi.0.maxcurrent.1.out 2800
+setp tmc26x-bspi.0.maxcurrent.2.out 1650
+setp tmc26x-bspi.0.maxcurrent.3.out 1650
+setp tmc26x-bspi.0.maxcurrent.4.out  670
+setp tmc26x-bspi.0.maxcurrent.5.out  820
 
 # configure outputs/inputs on gpio expander
 setp sx1509b.0.config 0x9ff0 
