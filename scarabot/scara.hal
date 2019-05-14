@@ -1,52 +1,51 @@
 loadrt [KINS]KINEMATICS
-loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS 
+loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD traj_period_nsec=[EMCMOT]TRAJ_PERIOD num_joints=[KINS]JOINTS
 loadrt hostmot2
 
 loadrt hm2_spi spidev_path=/dev/spidev0.0
-loadrt pid names=pid.j0,pid.j1,pid.j2,pid.j3
+loadrt tmc26x_bspi bspi_chans=hm2_alch_au.0.bspi.0
+
+loadrt pid names=pid.x,pid.y,pid.z
+
+loadusr -W sx1509b
+
+# configure motor currents
+setp tmc26x-bspi.0.maxcurrent.0.out 1000
+setp tmc26x-bspi.0.maxcurrent.1.out 1000
+setp tmc26x-bspi.0.maxcurrent.2.out 1650
+
+# configure outputs/inputs on gpio expander
+setp sx1509b.0.config 0x9ff0 
 
 setp    [HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 200
 setp    [HOSTMOT2](BOARD).0.pwmgen.pdm_frequency 5000
 setp    [HOSTMOT2](BOARD).0.watchdog.timeout_ns  500000000
 
-
 setp scarakins.D1 280 
-setp scarakins.D2 101
+setp scarakins.D2 100
 setp scarakins.D3 20
 setp scarakins.D4 100
 setp scarakins.D5 0
 setp scarakins.D6 0
 
+setp   pid.x.Pgain     [JOINT_0]P
+setp   pid.x.Igain     [JOINT_0]I
+setp   pid.x.Dgain     [JOINT_0]D
+setp   pid.x.bias      [JOINT_0]BIAS
+setp   pid.x.FF0       [JOINT_0]FF0
+setp   pid.x.FF1       [JOINT_0]FF1
+setp   pid.x.FF2       [JOINT_0]FF2
+setp   pid.x.deadband  [JOINT_0]DEADBAND
+setp   pid.x.maxoutput [JOINT_0]MAX_OUTPUT
+setp   pid.x.error-previous-target true
+setp   pid.x.maxerror .0005
 
-addf [HOSTMOT2](BOARD).0.read          servo-thread
-addf [HOSTMOT2](BOARD).0.write         servo-thread
-addf motion-command-handler            servo-thread
-addf motion-controller                 servo-thread
-addf pid.j0.do-pid-calcs               servo-thread
-addf pid.j1.do-pid-calcs               servo-thread
-addf pid.j2.do-pid-calcs               servo-thread
-addf pid.j3.do-pid-calcs               servo-thread
-
-# external signals
-
-setp   pid.j0.Pgain     [JOINT_0]P
-setp   pid.j0.Igain     [JOINT_0]I
-setp   pid.j0.Dgain     [JOINT_0]D
-setp   pid.j0.bias      [JOINT_0]BIAS
-setp   pid.j0.FF0       [JOINT_0]FF0
-setp   pid.j0.FF1       [JOINT_0]FF1
-setp   pid.j0.FF2       [JOINT_0]FF2
-setp   pid.j0.deadband  [JOINT_0]DEADBAND
-setp   pid.j0.maxoutput [JOINT_0]MAX_OUTPUT
-setp   pid.j0.error-previous-target true
-setp   pid.j0.maxerror .0005
-
-net j0-index-enable  <=> pid.j0.index-enable
-net j0-enable        =>  pid.j0.enable
-net j0-output        =>  pid.j0.output
-net j0-pos-cmd       =>  pid.j0.command
-net j0-vel-cmd       =>  pid.j0.command-deriv
-net j0-pos-fb        =>  pid.j0.feedback
+net x-index-enable  <=> pid.x.index-enable
+net x-enable        =>  pid.x.enable
+net x-output        =>  pid.x.output
+net x-pos-cmd       =>  pid.x.command
+net x-vel-cmd       =>  pid.x.command-deriv
+net x-pos-fb        =>  pid.x.feedback
 
 # Step Gen signals/setup
 
@@ -55,45 +54,45 @@ setp   [HOSTMOT2](BOARD).0.stepgen.00.dirhold         [JOINT_0]DIRHOLD
 setp   [HOSTMOT2](BOARD).0.stepgen.00.steplen         [JOINT_0]STEPLEN
 setp   [HOSTMOT2](BOARD).0.stepgen.00.stepspace       [JOINT_0]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.00.position-scale  [JOINT_0]STEP_SCALE
-setp   [HOSTMOT2](BOARD).0.stepgen.00.step_type        0
-setp   [HOSTMOT2](BOARD).0.stepgen.00.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.00.maxaccel         [JOINT_0]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.00.maxvel           [JOINT_0]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.00.step_type       0
+setp   [HOSTMOT2](BOARD).0.stepgen.00.control-type    1
+setp   [HOSTMOT2](BOARD).0.stepgen.00.maxaccel        [JOINT_0]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.00.maxvel          [JOINT_0]STEPGEN_MAXVEL
 
 # ---closedloop stepper signals---
 
-net j0-pos-cmd    <= joint.0.motor-pos-cmd
-net j0-vel-cmd    <= joint.0.vel-cmd
-net j0-output     <= [HOSTMOT2](BOARD).0.stepgen.00.velocity-cmd
-net j0-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.00.position-fb
-net j0-pos-fb     => joint.0.motor-pos-fb
-net j0-enable     <= joint.0.amp-enable-out
-net j0-enable     => [HOSTMOT2](BOARD).0.stepgen.00.enable
+net x-pos-cmd    <= joint.0.motor-pos-cmd
+net x-vel-cmd    <= joint.0.vel-cmd
+net x-output     <= [HOSTMOT2](BOARD).0.stepgen.00.velocity-cmd
+net x-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.00.position-fb
+net x-pos-fb     => joint.0.motor-pos-fb
+net x-enable     <= joint.0.amp-enable-out
+net x-enable     => [HOSTMOT2](BOARD).0.stepgen.00.enable
 
 # ---setup home / limit switch signals---
 
-net home-j0          =>  joint.0.home-sw-in
-net j0-neg-limit     =>  joint.0.neg-lim-sw-in
-net j0-pos-limit     =>  joint.0.pos-lim-sw-in
+net home-x     =>  joint.0.home-sw-in
+net x-neg-limit     =>  joint.0.neg-lim-sw-in
+net x-pos-limit     =>  joint.0.pos-lim-sw-in
 
-setp   pid.j1.Pgain     [JOINT_1]P
-setp   pid.j1.Igain     [JOINT_1]I
-setp   pid.j1.Dgain     [JOINT_1]D
-setp   pid.j1.bias      [JOINT_1]BIAS
-setp   pid.j1.FF0       [JOINT_1]FF0
-setp   pid.j1.FF1       [JOINT_1]FF1
-setp   pid.j1.FF2       [JOINT_1]FF2
-setp   pid.j1.deadband  [JOINT_1]DEADBAND
-setp   pid.j1.maxoutput [JOINT_1]MAX_OUTPUT
-setp   pid.j1.error-previous-target true
-setp   pid.j1.maxerror .0005
+setp   pid.y.Pgain     [JOINT_1]P
+setp   pid.y.Igain     [JOINT_1]I
+setp   pid.y.Dgain     [JOINT_1]D
+setp   pid.y.bias      [JOINT_1]BIAS
+setp   pid.y.FF0       [JOINT_1]FF0
+setp   pid.y.FF1       [JOINT_1]FF1
+setp   pid.y.FF2       [JOINT_1]FF2
+setp   pid.y.deadband  [JOINT_1]DEADBAND
+setp   pid.y.maxoutput [JOINT_1]MAX_OUTPUT
+setp   pid.y.error-previous-target true
+setp   pid.y.maxerror .0005
 
-net j1-index-enable  <=> pid.j1.index-enable
-net j1-enable        =>  pid.j1.enable
-net j1-output        =>  pid.j1.output
-net j1-pos-cmd       =>  pid.j1.command
-net j1-vel-cmd       =>  pid.j1.command-deriv
-net j1-pos-fb        =>  pid.j1.feedback
+net y-index-enable  <=> pid.y.index-enable
+net y-enable        =>  pid.y.enable
+net y-output        =>  pid.y.output
+net y-pos-cmd       =>  pid.y.command
+net y-vel-cmd       =>  pid.y.command-deriv
+net y-pos-fb        =>  pid.y.feedback
 
 # Step Gen signals/setup
 
@@ -102,46 +101,45 @@ setp   [HOSTMOT2](BOARD).0.stepgen.01.dirhold         [JOINT_1]DIRHOLD
 setp   [HOSTMOT2](BOARD).0.stepgen.01.steplen         [JOINT_1]STEPLEN
 setp   [HOSTMOT2](BOARD).0.stepgen.01.stepspace       [JOINT_1]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.01.position-scale  [JOINT_1]STEP_SCALE
-setp   [HOSTMOT2](BOARD).0.stepgen.01.step_type        0
-setp   [HOSTMOT2](BOARD).0.stepgen.01.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.01.maxaccel         [JOINT_1]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.01.maxvel           [JOINT_1]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.01.step_type       0
+setp   [HOSTMOT2](BOARD).0.stepgen.01.control-type    1
+setp   [HOSTMOT2](BOARD).0.stepgen.01.maxaccel        [JOINT_1]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.01.maxvel          [JOINT_1]STEPGEN_MAXVEL
 
 # ---closedloop stepper signals---
 
-net j1-pos-cmd    <= joint.1.motor-pos-cmd
-net j1-vel-cmd    <= joint.1.vel-cmd
-net j1-output     <= [HOSTMOT2](BOARD).0.stepgen.01.velocity-cmd
-net j1-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.01.position-fb
-net j1-pos-fb     => joint.1.motor-pos-fb
-net j1-enable     <= joint.1.amp-enable-out
-net j1-enable     => [HOSTMOT2](BOARD).0.stepgen.01.enable
+net y-pos-cmd    <= joint.1.motor-pos-cmd
+net y-vel-cmd    <= joint.1.vel-cmd
+net y-output     <= [HOSTMOT2](BOARD).0.stepgen.01.velocity-cmd
+net y-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.01.position-fb
+net y-pos-fb     => joint.1.motor-pos-fb
+net y-enable     <= joint.1.amp-enable-out
+net y-enable     => [HOSTMOT2](BOARD).0.stepgen.01.enable
 
 # ---setup home / limit switch signals---
 
-net home-j1          =>  joint.1.home-sw-in
-net j2-neg-limit     =>  joint.1.neg-lim-sw-in
-net j2-pos-limit     =>  joint.1.pos-lim-sw-in
+net home-y     =>  joint.1.home-sw-in
+net y-neg-limit     =>  joint.1.neg-lim-sw-in
+net y-pos-limit     =>  joint.1.pos-lim-sw-in
 
-# --- JOINT 2 ---
-setp   pid.j2.Pgain     [JOINT_2]P
-setp   pid.j2.Igain     [JOINT_2]I
-setp   pid.j2.Dgain     [JOINT_2]D
-setp   pid.j2.bias      [JOINT_2]BIAS
-setp   pid.j2.FF0       [JOINT_2]FF0
-setp   pid.j2.FF1       [JOINT_2]FF1
-setp   pid.j2.FF2       [JOINT_2]FF2
-setp   pid.j2.deadband  [JOINT_2]DEADBAND
-setp   pid.j2.maxoutput [JOINT_2]MAX_OUTPUT
-setp   pid.j2.error-previous-target true
-setp   pid.j2.maxerror .0005
+setp   pid.z.Pgain     [JOINT_2]P
+setp   pid.z.Igain     [JOINT_2]I
+setp   pid.z.Dgain     [JOINT_2]D
+setp   pid.z.bias      [JOINT_2]BIAS
+setp   pid.z.FF0       [JOINT_2]FF0
+setp   pid.z.FF1       [JOINT_2]FF1
+setp   pid.z.FF2       [JOINT_2]FF2
+setp   pid.z.deadband  [JOINT_2]DEADBAND
+setp   pid.z.maxoutput [JOINT_2]MAX_OUTPUT
+setp   pid.z.error-previous-target true
+setp   pid.z.maxerror .0005
 
-net j2-index-enable  <=> pid.j2.index-enable
-net j2-enable        =>  pid.j2.enable
-net j2-output        =>  pid.j2.output
-net j2-pos-cmd       =>  pid.j2.command
-net j2-vel-cmd       =>  pid.j2.command-deriv
-net j2-pos-fb        =>  pid.j2.feedback
+net z-index-enable  <=> pid.z.index-enable
+net z-enable        =>  pid.z.enable
+net z-output        =>  pid.z.output
+net z-pos-cmd       =>  pid.z.command
+net z-vel-cmd       =>  pid.z.command-deriv
+net z-pos-fb        =>  pid.z.feedback
 
 # Step Gen signals/setup
 
@@ -150,26 +148,26 @@ setp   [HOSTMOT2](BOARD).0.stepgen.02.dirhold         [JOINT_2]DIRHOLD
 setp   [HOSTMOT2](BOARD).0.stepgen.02.steplen         [JOINT_2]STEPLEN
 setp   [HOSTMOT2](BOARD).0.stepgen.02.stepspace       [JOINT_2]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.02.position-scale  [JOINT_2]STEP_SCALE
-setp   [HOSTMOT2](BOARD).0.stepgen.02.step_type        0
-setp   [HOSTMOT2](BOARD).0.stepgen.02.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.02.maxaccel         [JOINT_2]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.02.maxvel           [JOINT_2]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.02.step_type       0
+setp   [HOSTMOT2](BOARD).0.stepgen.02.control-type    1
+setp   [HOSTMOT2](BOARD).0.stepgen.02.maxaccel        [JOINT_2]STEPGEN_MAXACCEL
+setp   [HOSTMOT2](BOARD).0.stepgen.02.maxvel          [JOINT_2]STEPGEN_MAXVEL
 
 # ---closedloop stepper signals---
 
-net j2-pos-cmd    <= joint.2.motor-pos-cmd
-net j2-vel-cmd    <= joint.2.vel-cmd
-net j2-output     <= [HOSTMOT2](BOARD).0.stepgen.02.velocity-cmd
-net j2-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.02.position-fb
-net j2-pos-fb     => joint.2.motor-pos-fb
-net j2-enable     <= joint.2.amp-enable-out
-net j2-enable     => [HOSTMOT2](BOARD).0.stepgen.02.enable
+net z-pos-cmd    <= joint.2.motor-pos-cmd
+net z-vel-cmd    <= joint.2.vel-cmd
+net z-output     <= [HOSTMOT2](BOARD).0.stepgen.02.velocity-cmd
+net z-pos-fb     <= [HOSTMOT2](BOARD).0.stepgen.02.position-fb
+net z-pos-fb     => joint.2.motor-pos-fb
+net z-enable     <= joint.2.amp-enable-out
+net z-enable     => [HOSTMOT2](BOARD).0.stepgen.02.enable
 
 # ---setup home / limit switch signals---
 
-net home-j2          =>  joint.2.home-sw-in
-net j2-neg-limit     =>  joint.2.neg-lim-sw-in
-net j2-pos-limit     =>  joint.2.pos-lim-sw-in
+net home-z          =>  joint.2.home-sw-in
+net z-neg-limit     =>  joint.2.neg-lim-sw-in
+net z-pos-limit     =>  joint.2.pos-lim-sw-in
 
 #******************************
 # connect miscellaneous signals
@@ -177,29 +175,26 @@ net j2-pos-limit     =>  joint.2.pos-lim-sw-in
 
 #  ---HALUI signals---
 
-#net joint-select-a        halui.axis.x.select
-#net x-is-homed            halui.joint.0.is-homed
-#net jog-x-pos             halui.axis.x.plus
-#net jog-x-neg             halui.axis.x.minus
-#net jog-x-analog          halui.axis.x.analog
-#net joint-select-b        halui.axis.y.select
-#net y-is-homed            halui.joint.1.is-homed
-#net jog-y-pos             halui.axis.y.plus
-#net jog-y-neg             halui.axis.y.minus
-#net jog-y-analog          halui.axis.y.analog
-#net joint-select-c        halui.axis.z.select
-#net z-is-homed            halui.joint.2.is-homed
-#net jog-z-pos             halui.axis.z.plus
-#net jog-z-neg             halui.axis.z.minus
-#net jog-z-analog          halui.axis.z.analog
-#net jog-selected-pos      halui.axis.selected.plus
-#net jog-selected-neg      halui.axis.selected.minus
-#net spindle-manual-cw     halui.spindle.forward
-#net spindle-manual-ccw    halui.spindle.reverse
-#net spindle-manual-stop   halui.spindle.stop
-#net machine-is-on         halui.machine.is-on
-#net jog-speed             halui.axis.jog-speed 
-#net MDI-mode              halui.mode.is-mdi
+net joint-select-a        halui.axis.x.select
+net x-is-homed            halui.joint.0.is-homed
+net jog-x-pos             halui.axis.x.plus
+net jog-x-neg             halui.axis.x.minus
+net jog-x-analog          halui.axis.x.analog
+net joint-select-b        halui.axis.y.select
+net y-is-homed            halui.joint.1.is-homed
+net jog-y-pos             halui.axis.y.plus
+net jog-y-neg             halui.axis.y.minus
+net jog-y-analog          halui.axis.y.analog
+net joint-select-c        halui.axis.z.select
+net z-is-homed            halui.joint.2.is-homed
+net jog-z-pos             halui.axis.z.plus
+net jog-z-neg             halui.axis.z.minus
+net jog-z-analog          halui.axis.z.analog
+net jog-selected-pos      halui.axis.selected.plus
+net jog-selected-neg      halui.axis.selected.minus
+net machine-is-on         halui.machine.is-on
+net jog-speed             halui.axis.jog-speed 
+net MDI-mode              halui.mode.is-mdi
 
 #  ---coolant signals---
 
@@ -222,4 +217,6 @@ net machine-is-enabled        <=  motion.motion-enabled
 net estop-out     <=  iocontrol.0.user-enable-out
 net estop-out     =>  iocontrol.0.emc-enable-in
 
-
+# tool changer loopbacks
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
