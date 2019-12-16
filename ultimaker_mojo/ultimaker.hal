@@ -3,8 +3,11 @@ loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JO
 loadrt hostmot2
 
 loadrt hm2_spi spidev_path=/dev/spidev0.0
-loadrt max31855_bspi bspi_chans=hm2_mojo.0.bspi.0
-loadrt apa102c_bspi bspi_chans=hm2_mojo.0.bspi.1
+#loadrt hm2_rpspi spiclk_rate=20000 config="sserial_port_0=00000000 "
+
+loadrt tmc26x_bspi   bspi_chans=hm2_mojo.0.bspi.0
+loadrt max31855_bspi bspi_chans=hm2_mojo.0.bspi.1
+loadrt apa102c_bspi  bspi_chans=hm2_mojo.0.bspi.2
 
 loadrt pid names=pid.x,pid.y,pid.z,pid.a,pid.b,pid.h0,pid.h1,pid.h2
 loadrt limit1 names=limit1.h0,limit1.h1,limit1.h2
@@ -13,25 +16,50 @@ loadrt mult2 names=mult2.a0
 loadrt conv_u32_float names=conv_u32_float.a0
 
 loadusr -W thermistor names=thermistor.a0
+loadusr -W sx1509b
 
+# configure motor currents
+setp tmc26x-bspi.0.maxcurrent.0.out 1050
+setp tmc26x-bspi.0.maxcurrent.1.out 1050
+setp tmc26x-bspi.0.maxcurrent.2.out  750
+setp tmc26x-bspi.0.maxcurrent.3.out 1050
+setp tmc26x-bspi.0.maxcurrent.4.out    0
+setp tmc26x-bspi.0.maxcurrent.5.out    0
+
+# configure outputs/inputs on gpio expander
+setp sx1509b.0.config 0x9ff0
+
+# take raw adc value, convert to float and multiple by 1/1024
+#(mojo has 10 bit adc)
 net a0 hm2_mojo.0.adc.00.chan.00.value => conv_u32_float.a0.in
 net a0f conv_u32_float.a0.out mult2.a0.in0 
 setp mult2.a0.in1 0.0009765625
 
-setp thermistor.a0.beta 4500
-setp thermistor.a0.r-other 100
-setp thermistor.a0.r0 100
 setp thermistor.a0.t0-c 25
+setp thermistor.a0.beta 4500
+
+setp thermistor.a0.r-other 100
+setp thermistor.a0.r0 2200
+
+# feed [0.0:1.0] adc value into thermistor comp
 setp thermistor.a0.v-total 1
 net a0v mult2.a0.out thermistor.a0.v-thermistor
 
 setp apa102c-bspi.0.color.0.out 0x080022ff
 setp apa102c-bspi.0.num-leds.0.out 36
 
-setp    [HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 200
-setp    [HOSTMOT2](BOARD).0.pwmgen.pdm_frequency 5000
-setp    [HOSTMOT2](BOARD).0.watchdog.timeout_ns 500000000
+# invert onboard pwmgen's
+setp [HOSTMOT2](BOARD).0.pwmgen.00.out0.invert_output TRUE
+setp [HOSTMOT2](BOARD).0.pwmgen.01.out0.invert_output TRUE
+setp [HOSTMOT2](BOARD).0.pwmgen.02.out0.invert_output TRUE
+setp [HOSTMOT2](BOARD).0.pwmgen.03.out0.invert_output TRUE
+setp [HOSTMOT2](BOARD).0.pwmgen.04.out0.invert_output TRUE
 
+setp [HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 200
+setp [HOSTMOT2](BOARD).0.pwmgen.pdm_frequency 5000
+setp [HOSTMOT2](BOARD).0.watchdog.timeout_ns 500000000
+
+# assign functions
 addf [HOSTMOT2](BOARD).0.read          servo-thread
 addf [HOSTMOT2](BOARD).0.write         servo-thread
 addf motion-command-handler   servo-thread
@@ -54,19 +82,18 @@ addf conv_u32_float.a0        servo-thread
 addf mult2.a0                 servo-thread
 
 # external signals
-# --- HOME-X ---
-net home-x     <=  [HOSTMOT2](BOARD).0.gpio.004.in_not
 
-# --- HOME-Y ---
-net home-y     <=  [HOSTMOT2](BOARD).0.gpio.002.in
 
-# --- HOME-Z ---
-net home-z     <=  [HOSTMOT2](BOARD).0.gpio.000.in_not
+# --- HOMING ---
+net home-x <= sx1509b.0.gpio-00
+net home-y <= sx1509b.0.gpio-03
+net home-z <= sx1509b.0.gpio-02
 
 # --- MOTOR EN ---
-setp [HOSTMOT2](BOARD).0.gpio.012.is_output TRUE
-setp [HOSTMOT2](BOARD).0.gpio.012.invert_output TRUE
-net machine-is-enabled => [HOSTMOT2](BOARD).0.gpio.012.out
+setp [HOSTMOT2](BOARD).0.gpio.014.is_output TRUE
+setp [HOSTMOT2](BOARD).0.gpio.014.invert_output TRUE
+net machine-is-enabled => [HOSTMOT2](BOARD).0.gpio.014.out
+
 
 #*******************
 #  AXIS X
@@ -314,17 +341,8 @@ net b-enable     => [HOSTMOT2](BOARD).0.stepgen.04.enable
 #*******************
 #  Cooling Fan
 #*******************
-net fan0-enable => [HOSTMOT2](BOARD).0.pwmgen.07.enable
-net fan0-output => [HOSTMOT2](BOARD).0.pwmgen.07.value
+net fan0-output => sx1509b.0.pwm-12
 net fan0-output <= motion.analog-out-00
-
-sets fan0-enable true
-
-# ---PWM Generator signals/setup---
-
-setp [HOSTMOT2](BOARD).0.pwmgen.07.output-type 1
-setp [HOSTMOT2](BOARD).0.pwmgen.07.scale  [FAN_0]OUTPUT_SCALE
-
 
 #*******************
 #  Heater 0 (Extruder 0 heater block)
