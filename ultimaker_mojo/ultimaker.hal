@@ -3,7 +3,7 @@ loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JO
 loadrt hostmot2
 
 loadrt hm2_spi spidev_path=/dev/spidev0.0
-#loadrt hm2_rpspi spiclk_rate=20000 config="sserial_port_0=00000000 "
+#loadrt hm2_rpspi spiclk_rate=20000
 
 loadrt tmc26x_bspi   bspi_chans=hm2_mojo.0.bspi.0
 loadrt max31855_bspi bspi_chans=hm2_mojo.0.bspi.1
@@ -19,10 +19,10 @@ loadusr -W thermistor names=thermistor.a0
 loadusr -W sx1509b
 
 # configure motor currents
-setp tmc26x-bspi.0.maxcurrent.0.out 1050
-setp tmc26x-bspi.0.maxcurrent.1.out 1050
-setp tmc26x-bspi.0.maxcurrent.2.out  750
-setp tmc26x-bspi.0.maxcurrent.3.out 1050
+setp tmc26x-bspi.0.maxcurrent.0.out 1650
+setp tmc26x-bspi.0.maxcurrent.1.out 1650
+setp tmc26x-bspi.0.maxcurrent.2.out 1250
+setp tmc26x-bspi.0.maxcurrent.3.out  800
 setp tmc26x-bspi.0.maxcurrent.4.out    0
 setp tmc26x-bspi.0.maxcurrent.5.out    0
 
@@ -57,7 +57,7 @@ setp [HOSTMOT2](BOARD).0.pwmgen.04.out0.invert_output TRUE
 
 setp [HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 200
 setp [HOSTMOT2](BOARD).0.pwmgen.pdm_frequency 5000
-setp [HOSTMOT2](BOARD).0.watchdog.timeout_ns 500000000
+setp [HOSTMOT2](BOARD).0.watchdog.timeout_ns  5000000
 
 # assign functions
 addf [HOSTMOT2](BOARD).0.read          servo-thread
@@ -127,8 +127,8 @@ setp   [HOSTMOT2](BOARD).0.stepgen.00.stepspace       [JOINT_0]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.00.position-scale  [JOINT_0]STEP_SCALE
 setp   [HOSTMOT2](BOARD).0.stepgen.00.step_type        0
 setp   [HOSTMOT2](BOARD).0.stepgen.00.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.00.maxaccel         [JOINT_0]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.00.maxvel           [JOINT_0]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.00.maxaccel         0
+setp   [HOSTMOT2](BOARD).0.stepgen.00.maxvel           0
 
 # ---closedloop stepper signals---
 
@@ -178,8 +178,8 @@ setp   [HOSTMOT2](BOARD).0.stepgen.01.stepspace       [JOINT_1]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.01.position-scale  [JOINT_1]STEP_SCALE
 setp   [HOSTMOT2](BOARD).0.stepgen.01.step_type        0
 setp   [HOSTMOT2](BOARD).0.stepgen.01.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.01.maxaccel         [JOINT_1]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.01.maxvel           [JOINT_1]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.01.maxaccel         0
+setp   [HOSTMOT2](BOARD).0.stepgen.01.maxvel           0
 
 # ---closedloop stepper signals---
 
@@ -229,8 +229,8 @@ setp   [HOSTMOT2](BOARD).0.stepgen.02.stepspace       [JOINT_2]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.02.position-scale  [JOINT_2]STEP_SCALE
 setp   [HOSTMOT2](BOARD).0.stepgen.02.step_type        0
 setp   [HOSTMOT2](BOARD).0.stepgen.02.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.02.maxaccel         [JOINT_2]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.02.maxvel           [JOINT_2]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.02.maxaccel         0
+setp   [HOSTMOT2](BOARD).0.stepgen.02.maxvel           0
 
 # ---closedloop stepper signals---
 
@@ -280,8 +280,8 @@ setp   [HOSTMOT2](BOARD).0.stepgen.03.stepspace       [JOINT_3]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.03.position-scale  [JOINT_3]STEP_SCALE
 setp   [HOSTMOT2](BOARD).0.stepgen.03.step_type        0
 setp   [HOSTMOT2](BOARD).0.stepgen.03.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.03.maxaccel         [JOINT_3]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.03.maxvel           [JOINT_3]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.03.maxaccel         0
+setp   [HOSTMOT2](BOARD).0.stepgen.03.maxvel           0
 
 # ---closedloop stepper signals---
 
@@ -325,8 +325,8 @@ setp   [HOSTMOT2](BOARD).0.stepgen.04.stepspace       [JOINT_4]STEPSPACE
 setp   [HOSTMOT2](BOARD).0.stepgen.04.position-scale  [JOINT_4]STEP_SCALE
 setp   [HOSTMOT2](BOARD).0.stepgen.04.step_type        0
 setp   [HOSTMOT2](BOARD).0.stepgen.04.control-type     1
-setp   [HOSTMOT2](BOARD).0.stepgen.04.maxaccel         [JOINT_4]STEPGEN_MAXACCEL
-setp   [HOSTMOT2](BOARD).0.stepgen.04.maxvel           [JOINT_4]STEPGEN_MAXVEL
+setp   [HOSTMOT2](BOARD).0.stepgen.04.maxaccel         0
+setp   [HOSTMOT2](BOARD).0.stepgen.04.maxvel           0
 
 # ---closedloop stepper signals---
 
@@ -357,6 +357,7 @@ setp   pid.h0.FF1       [HEATER_0]FF1
 setp   pid.h0.FF2       [HEATER_0]FF2
 setp   pid.h0.deadband  [HEATER_0]DEADBAND
 setp   pid.h0.maxoutput [HEATER_0]MAX_OUTPUT
+setp   pid.h0.maxerror  5
 setp   pid.h0.error-previous-target true
 
 setp limit1.h0.min 0
